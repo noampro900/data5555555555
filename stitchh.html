@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random YouTube Video</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        iframe {
+            width: 80%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    const videoUrls = [
+        "https://youtube.com/shorts/59x5FaP7U0A?si=acNEhnEbL6T7Psj_",
+        "https://youtube.com/shorts/1zO7tzhiYBg?si=M2Y7i2jinWt2xWVQ",
+        "https://youtu.be/YfaMuwLSnk0?si=8gqON52N8NvNK1YI",
+        "https://youtu.be/sIA0eW0-IVQ?si=vHGjBJg8QzYzJcKG",
+        "https://youtube.com/shorts/v_wJPpBoXBQ?si=FphU83hESzb9W7wd",
+        "https://youtube.com/shorts/zPosseuXZWE?si=OJgHi7Bibnq4GGtG",
+        "https://youtube.com/shorts/TLVHfMuUA14?si=QvmR7p6eoJWqExzG",
+        "https://youtube.com/shorts/V0py6f1NiHI?si=VlzyxvF7WSUoKKHs",
+        "https://youtube.com/shorts/v_wJPpBoXBQ?si=FphU83hESzb9W7wd",
+        "https://youtube.com/shorts/o0W36jJ1hr4?si=n37X3L0JBq190vxk"
+    ];
+
+    const randomIndex = Math.floor(Math.random() * videoUrls.length);
+    const randomVideoUrl = videoUrls[randomIndex];
+
+    document.write(`<iframe src="${randomVideoUrl}" allowfullscreen></iframe>`);
+</script>
+
+</body>
+</html>
