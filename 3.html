@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Teleport</title>
+    <script>
+        function teleport() {
+            // List of URLs to choose from
+            const sites = [
+                "https://youtu.be/PdKguZ2borA?si=Nnoity5pvVPRwauX",
+                "https://youtu.be/L5MiJWhYzvg?si=rMZ9rw6IdB4Qah8r",
+                "https://youtu.be/nWy81uTlMDQ?si=lDZLdrA4mockxszb",
+                // Add more sites up to 23
+                "https://youtu.be/hZo04M_D78Y?si=9AK5rX6_fxZu3tA7",
+                "https://youtu.be/-oAfu5OnUUw?si=KUIrqES6Q53EZF9N",
+                "https://youtu.be/Gs_G2ZcKDVw?si=ppdQvnATGZWggBAj
+                "https://example7.com"
+                       ];
+
+            // Generate a random index to pick a site
+            const randomIndex = Math.floor(Math.random() * sites.length);
+
+            // Redirect to the randomly selected site
+            window.location.href = sites[randomIndex];
+        }
+    </script>
+</head>
+<body onload="teleport()">
+    <h1>Teleporting to a random site...</h1>
+</body>
+</html>
