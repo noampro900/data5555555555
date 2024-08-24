@@ -1,0 +1,16 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="ערוץ סרטים לא ידוע" tvg-logo="" group-title="ערוצים לא ידועים",ערוץ סרטים לא ידוע
+#EXTINF:-1 tvg-id="עכשיו 14" tvg-logo="https://www.now14.co.il/wp-content/themes/14-child/assets/logo14/Live.svg" group-title="חדשות",עכשיו 14
+https://ch14-channel14-content.akamaized.net/hls/live/2104807/CH14_CHANNEL14/2/streamPlaylist.m3u8
+#EXTINF:-1 tvg-id="דיסני גוניור יפן" tvg-logo="" group-title="ערוצי ילדים שפות שונות",דיסני גוניור יפן
+http://cdns.jp-primehome.com:8000/zhongying/live/playlist.m3u8?cid=cs23
+#EXTINF:-1 tvg-id="nick junior אנגליה" tvg-logo="" group-title="ערוצי ילדים שפות שונות",nick junior באנגלית
+https://d20opqftbkv2z0.cloudfront.net/live13/nickjr/bitrate1-clear.isml/live.m3u8
+#EXTINF:-1 tvg-id="ערוץ סרטים" tvg-logo="" group-title="ערוצי סרטים",ערוץ סרטים
+http://stm-ory-live-14a.cellcomtvcdn.tv:80/session/2cad2a8a-621e-11ef-8744-000c29edd9ce$h1.0$default/rkz79m/playout06/chunklist_b1328000.m3u8?smil_profile=mobile
+#EXTINF:-1 tvg-id="fomo" tvg-logo="" group-title="ערוצי ילדים",fomo
+http://stm-vod-nta-9a.cellcomtvcdn.tv:80/session/ad9f80a6-621f-11ef-8744-000c29edd9ce$h1.0$default/rkz79m/ngx/56/mob/hrr_fomo/chunklist_b1596000.m3u8?smil_profile=default
+#EXTINF:-1 tvg-id="ערוץ ילדים לא ידוע" tvg-logo="" group-title="ערוצים לא ידועים",ערוץ ילדים לא ידוע
+
+
+
