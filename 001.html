@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Redirect</title>
+    <script>
+        // Define the target date and time
+        const targetDate = new Date('2024-09-17T16:52:55');
+
+        // Define the URL to redirect to after the target time
+        const redirectUrl = 'https://example.com';  // Replace with your desired URL
+
+        // Check if the current date is past the target date
+        function checkDate() {
+            const currentDate = new Date();
+            
+            // If the current date is past the target date, redirect
+            if (currentDate >= targetDate) {
+                window.location.href = redirectUrl;
+            }
+        }
+
+        // Check the date on page load
+        window.onload = checkDate;
+
+        // Optionally, you can keep checking the date every second to ensure proper redirection
+        setInterval(checkDate, 1000);
+    </script>
+</head>
+<body>
+    <h1>Counter Page</h1>
+    <p>This page will redirect you if the current date is past 17 September 2024, 16:52:55.</p>
+</body>
+</html>
