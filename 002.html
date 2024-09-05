@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surprise Image Animation</title>
+    <title>Surprise Image Animation with Sound</title>
     <style>
         body, html {
             margin: 0;
@@ -61,15 +61,25 @@
 </head>
 <body>
     <div class="container">
-        <img src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA87_20240905165832.png" alt="Surprise Image" id="surpriseImage">
+        <img src="https://noampro900.github.io/data5555555555/חסר כותרת87_20240905165832.png" alt="Surprise Image" id="surpriseImage">
+        <!-- Background sound -->
+        <audio id="surpriseSound" src="your-sound-file.mp3"></audio>
     </div>
 
     <script>
         const redirectURL = "https://example.com"; // Change this to the URL you want to redirect to.
+        const surpriseSound = document.getElementById('surpriseSound');
 
-        // Redirect after the animation ends
+        // Play the sound when the animation starts
+        window.onload = () => {
+            surpriseSound.play();
+        };
+
+        // Add a delay before redirecting
         document.getElementById('surpriseImage').addEventListener('animationend', () => {
-            window.location.href = redirectURL;
+            setTimeout(() => {
+                window.location.href = redirectURL;
+            }, 4000); // 4 seconds delay
         });
     </script>
 </body>
