@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlock Levels</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #message {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: green;
+        }
+        #promoInput, #submitPromo {
+            font-size: 18px;
+            padding: 10px;
+        }
+        #image {
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #promoSection {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="promoSection">
+        <input type="text" id="promoInput" placeholder="Enter promo code">
+        <button id="submitPromo">Submit Promo Code</button>
+    </div>
+
+    <img id="image" src="https://via.placeholder.com/300" alt="Click Image" style="display: none;" />
+    
+    <p id="message"></p>
+
+    <script>
+        const validPromoCodes = ["openr922200012", "opens283849"];
+        let clickCount = 0;
+        let unlocked = false;
+        const messages = [
+            "unlock 2 levels", 
+            "unlock 9 levels", 
+            "unlock skip level for one time", 
+            "nothing"
+        ];
+
+        document.getElementById("submitPromo").addEventListener("click", () => {
+            const promoCode = document.getElementById("promoInput").value;
+            if (validPromoCodes.includes(promoCode)) {
+                document.getElementById("image").style.display = "block";
+                document.getElementById("message").innerText = "Promo code accepted! Click the image 8 times.";
+                unlocked = true;
+            } else {
+                document.getElementById("message").innerText = "Invalid promo code.";
+            }
+        });
+
+        document.getElementById("image").addEventListener("click", () => {
+            if (!unlocked) return;
+
+            clickCount++;
+            if (clickCount === 8) {
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                document.getElementById("message").innerText = randomMessage;
+                clickCount = 0;  // Reset the click count
+            }
+        });
+    </script>
+
+</body>
+</html>
