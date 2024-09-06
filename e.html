@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Progress Bar (47,000,000 Target)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            height: 30px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4caf50;
+        }
+
+        #click-count {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Shared Progress Bar</h1>
+
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <button id="progress-btn">Click Me</button>
+
+    <p id="click-count">Click count: 0</p>
+
+    <script>
+        const maxClicks = 47000000; // Maximum click target (47 million)
+        const progressBar = document.getElementById('progress-bar');
+        const clickCountText = document.getElementById('click-count');
+        const button = document.getElementById('progress-btn');
+
+        // Load the click count from localStorage or initialize it to 0
+        let clickCount = parseInt(localStorage.getItem('clickCount')) || 0;
+
+        // Function to update the progress bar and display the count
+        function updateProgressBar() {
+            const progressPercentage = Math.min((clickCount / maxClicks) * 100, 100); // Calculate percentage
+            progressBar.style.width = progressPercentage + '%';
+            clickCountText.textContent = 'Click count: ' + clickCount + ' (' + progressPercentage.toFixed(2) + '%)';
+        }
+
+        // Add event listener to the button
+        button.addEventListener('click', function() {
+            clickCount++;
+            localStorage.setItem('clickCount', clickCount); // Save click count to localStorage
+            updateProgressBar(); // Update the progress bar
+        });
+
+        // Update the progress bar on page load
+        window.onload = updateProgressBar;
+    </script>
+
+</body>
+</html>
