@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000; /* Fallback color */
+            background-image: url('your-background.gif'); /* Placeholder for background GIF */
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+
+        /* Go Back Button in Top Left Corner */
+        .go-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-image: url('your-image.png'); /* Placeholder for Go Back button image */
+            background-size: cover;
+            width: 200px; /* Adjust size as needed */
+            height: 80px; /* Adjust size as needed */
+            border: none;
+            cursor: pointer;
+        }
+
+        .go-back:hover {
+            transform: scale(1.05);
+        }
+
+        /* Align Second and Third Buttons in the Center */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .button {
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Trio Showdown Button as GIF */
+        .trio-showdown {
+            background-image: url('your-trio-showdown.gif'); /* Placeholder for Trio Showdown button GIF */
+            background-size: cover;
+            width: 250px; /* Adjust size as needed */
+            height: 100px; /* Adjust size as needed */
+        }
+
+        /* Jellyfish Fishing Button (דייג מדוזות) as GIF */
+        .jellyfish-fishing {
+            background-image: url('your-jellyfish-fishing.gif'); /* Placeholder for Jellyfish Fishing button GIF */
+            background-size: cover;
+            width: 250px; /* Adjust size as needed */
+            height: 100px; /* Adjust size as needed */
+        }
+    </style>
+</head>
+<body>
+    <!-- Go Back Button in the top-left corner -->
+    <button class="go-back" onclick="window.location.href='https://www.example.com/go-back';"></button>
+
+    <!-- Container for the second and third buttons, centered vertically and horizontally -->
+    <div class="button-container">
+        <button class="button trio-showdown" onclick="window.location.href='https://www.example.com/trio-showdown';"></button>
+        <button class="button jellyfish-fishing" onclick="window.location.href='https://www.example.com/jellyfish-fishing';"></button>
+    </div>
+</body>
+</html>
