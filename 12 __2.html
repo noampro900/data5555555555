@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Progress Bar with User Accounts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            height: 30px;
+            margin: 20px auto;
+            max-width: 500px;
+            position: relative;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4caf50;
+        }
+
+        .goal-marker {
+            position: absolute;
+            height: 30px;
+            width: 2px;
+            background-color: red;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        #click-count {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #ff4500;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #progress-btn {
+            background-color: #4caf50; /* Green color for the click button */
+            color: white;
+        }
+
+        #save-btn, #login-btn, #logout-btn {
+            background-color: #2196F3; /* Blue color for other buttons */
+            color: white;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .popup input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .popup button {
+            margin-top: 10px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Click Progress Bar with User Accounts</h1>
+
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+        <!-- Markers for goals -->
+        <div class="goal-marker" style="left: 0.15%;"></div> <!-- 70 -->
+        <div class="goal-marker" style="left: 1.68%;"></div> <!-- 790 -->
+        <div class="goal-marker" style="left: 29.79%;"></div> <!-- 14000 -->
+    </div>
+
+    <button id="progress-btn">Click Me</button>
+    <button id="save-btn">Save</button>
+    <button id="login-btn">Login</button>
+    <button id="logout-btn">Logout</button>
+
+    <p id="click-count">Click count: 0</p>
+    <p id="message"></p>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Save Account Popup -->
+    <div class="popup" id="save-popup">
+        <h2>Save Account</h2>
+        <input type="text" id="save-username" placeholder="Username">
+        <input type="password" id="save-password" placeholder="Password">
+        <button id="save-submit">Save</button>
+    </div>
+
+    <!-- Login Popup -->
+    <div class="popup" id="login-popup">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-submit">Login</button>
+    </div>
+
+    <script>
+        const maxClicks = 47000000; // Maximum click target (47 million)
+        const goals = [70, 790, 14000];
+        const messages = {
+            70: ["Come on medal"],
+            790: ["Good boy medal"],
+            14000: ["Wow! You are absolutely good boy"],
+        };
+        const randomMessages = [
+            "Good one! Keep clicking!",
+            "Good!",
+            "Wow, you're absolutely an auto clicker!!",
+        ];
+
+        const progressBar = document.getElementById('progress-bar');
+        const clickCountText = document.getElementById('click-count');
+        const messageText = document.getElementById('message');
+        const progressButton = document.getElementById('progress-btn');
+        const saveButton = document.getElementById('save-btn');
+        const loginButton = document.getElementById('login-btn');
+        const logoutButton = document.getElementById('logout-btn');
+        const overlay = document.getElementById('overlay');
+        const savePopup = document.getElementById('save-popup');
+        const loginPopup = document.getElementById('login-popup');
+        const saveUsernameInput = document.getElementById('save-username');
+        const savePasswordInput = document.getElementById('save-password');
+        const loginUsernameInput = document.getElementById('login-username');
+        const loginPasswordInput = document.getElementById('login-password');
+        const saveSubmitButton = document.getElementById('save-submit');
+        const loginSubmitButton = document.getElementById('login-submit');
+        const serverUrl = 'http://127.0.0.1:3000'; // Replace with your server URL
+
+        // Load the click count from localStorage or initialize it to 0
+        let clickCount = parseInt(localStorage.getItem('clickCount')) || 0;
+        let isBoostActive = false; // Track if the boost is active
+        let currentUsername = null; // Track the current logged-in username
+
+        // Function to update the progress bar and display the count
+        function updateProgressBar() {
+            const progressPercentage = Math.min((clickCount / maxClicks) * 100, 100); // Calculate percentage
+            progressBar.style.width = progressPercentage + '%';
+            clickCountText.textContent = 'Click count: ' + clickCount + ' (' + progressPercentage.toFixed(2) + '%)';
+
+            // Update goal markers and messages based on the click count
+            goals.forEach(goal => {
+                if (clickCount >= goal) {
+                    displayMessage(goal);
+                }
+            });
+        }
+
+        // Function to display a message based on the goal reached
+        function displayMessage(goal) {
+            if (goals.includes(goal)) {
+                // Replace previous message
+                const specificMessages = messages[goal] || [];
+                const randomMessage = specificMessages.length ? specificMessages[0] : randomMessages[Math.floor(Math.random() * randomMessages.length)];
+                messageText.textContent = randomMessage;
+            }
+        }
+
+        // Function to handle button clicks
+        function handleClick() {
+            if (clickCount >= 5000 && !isBoostActive) {
+                isBoostActive = true; // Activate the boost
+                let boostEndTime = Date.now() + 3000; // Boost for 3 seconds
+                localStorage.setItem('clickCount', clickCount); // Save current click count
+
+                // Function to handle click during boost
+                function boostClick() {
+                    if (Date.now() < boostEndTime) {
+                        clickCount += 200; // Add 200 during boost
+                        localStorage.setItem('clickCount', clickCount);
+                        updateProgressBar();
+                    } else {
+                        isBoostActive = false; // Deactivate the boost
+                    }
+                }
+
+                // Set interval to handle boost clicks
+                const interval = setInterval(() => {
+                    if (Date.now() >= boostEndTime) {
+                        clearInterval(interval); // Stop interval after boost period
+                        localStorage.setItem('clickCount', clickCount); // Save final click count
+                        updateProgressBar(); // Update the progress bar
+                    }
+                }, 50); // Check every 50ms
+            } else {
+                clickCount++; // Normal click
+                localStorage.setItem('clickCount', clickCount); // Save click count to localStorage
+                updateProgressBar(); // Update the progress bar
+            }
+        }
+
+        // Function to save the account
+        function handleSave() {
+            const username = saveUsernameInput.value;
+            const password = savePasswordInput.value;
+            if (username && password) {
+                fetch(`${serverUrl}/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, clickCount }),
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentUsername = username; // Set current username
+                        alert('Account saved successfully!');
+                        hidePopups();
+                    } else {
+                        alert('Error saving account.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving account.');
+                });
+            } else {
+                alert('Please enter both username and password.');
+            }
+        }
+
+        // Function to login
+        function handleLogin() {
+            const username = loginUsernameInput.value;
+            const password = loginPasswordInput.value;
+            if (username && password) {
+                fetch(`${serverUrl}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        clickCount = data.clickCount || 0; // Load click count
+                        currentUsername = username; // Set current username
+                        localStorage.setItem('clickCount', clickCount); // Save click count
+                        updateProgressBar();
+                        alert('Logged in successfully!');
+                        hidePopups();
+                    } else {
+                        alert('Invalid username or password.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error logging in.');
+                });
+            } else {
+                alert('Please enter both username and password.');
+            }
+        }
+
+        // Function to logout
+        function handleLogout() {
+            if (currentUsername) {
+                fetch(`${serverUrl}/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: currentUsername }),
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        clickCount = 0; // Reset click count
+                        localStorage.removeItem('clickCount'); // Clear localStorage
+                        updateProgressBar();
+                        alert('Logged out successfully!');
+                    } else {
+                        alert('Error logging out.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error logging out.');
+                });
+            }
+        }
+
+        // Function to show a popup
+        function showPopup(popupId) {
+            overlay.style.display = 'block';
+            document.getElementById(popupId).style.display = 'block';
+        }
+
+        // Function to hide all popups
+        function hidePopups() {
+            overlay.style.display = 'none';
+            savePopup.style.display = 'none';
+            loginPopup.style.display = 'none';
+        }
+
+        // Add event listeners to the buttons
+        progressButton.addEventListener('click', handleClick);
+        saveButton.addEventListener('click', () => showPopup('save-popup'));
+        loginButton.addEventListener('click', () => showPopup('login-popup'));
+        logoutButton.addEventListener('click', handleLogout);
+        saveSubmitButton.addEventListener('click', handleSave);
+        loginSubmitButton.addEventListener('click', handleLogin);
+
+        // Close popups if clicking outside
+        overlay.addEventListener('click', hidePopups);
+
+        // Update the progress bar on page load
+        window.onload = updateProgressBar;
+    </script>
+
+</body>
+</html>
