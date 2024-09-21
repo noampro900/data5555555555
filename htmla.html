@@ -1,38 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text Change on Second Visit</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-    }
-    h1 {
-      font-size: 2em;
-      color: #333;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חנות החינם</title>
+    <style>
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-  <h1 id="message"></h1>
 
-  <script>
-    // Define your two messages
-    const firstVisitMessage = "you got rico!";
-    const secondVisitMessage = "you already got rico...";
+<!-- Image Element -->
+<img id="teleportImage" src="https://noampro900.github.io/data5555555555/lv_0_20240921125848.gif" alt="Teleport Image" onclick="teleport()">
 
-    // Check if the user has visited before
-    if (localStorage.getItem('visited')) {
-      // Display the second message for all future visits
-      document.getElementById('message').innerText = secondVisitMessage;
-    } else {
-      // Display the first message and set the visit flag
-      document.getElementById('message').innerText = firstVisitMessage;
-      localStorage.setItem('visited', 'true');
+<script>
+    // Check if the image has already been changed
+    if (localStorage.getItem('imageChanged') === 'true') {
+        document.getElementById('teleportImage').src = 'https://noampro900.github.io/data5555555555/lv_0_20240921130215-ezgif.com-video-to-gif-converter.gif'; // New image
     }
-  </script>
+
+    function teleport() {
+        // Change the image permanently
+        document.getElementById('teleportImage').src = 'lv_0_20240921130215-ezgif.com-video-to-gif-converter.gif'; // New image
+        localStorage.setItem('imageChanged', 'true'); // Store in localStorage to keep the change
+
+        // Redirect to a new site
+        window.location.href = 'https://noampro900.github.io/data5555555555/htmlw.html'; // Change to the URL you want
+    }
+</script>
+
 </body>
 </html>
