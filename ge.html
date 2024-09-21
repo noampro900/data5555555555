@@ -38,6 +38,11 @@
         <h2>Shop</h2>
         <img id="item" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA149_20240922011550%20(2).png" alt="Item">
         <p id="purchaseMessage"></p>
+
+        <!-- New free Grims image -->
+        <h2>Get Free Grims</h2>
+        <img id="freeGrims" src="path_to_free_grims_image.png" alt="Get 5 Free Grims" width="200px" height="200px">
+        <p id="freeGrimsMessage"></p>
     </div>
     
     <button id="myCollectionBtn">My Collection</button>
@@ -99,6 +104,14 @@
         document.getElementById('backToShopBtn').addEventListener('click', function() {
             document.getElementById('collection').style.display = 'none';
             document.getElementById('shop').style.display = 'block';
+        });
+
+        // Clicking on the free grims image
+        document.getElementById('freeGrims').addEventListener('click', function() {
+            grims += 5;
+            document.getElementById('grims').textContent = grims;
+            localStorage.setItem('grims', grims); // Save to localStorage
+            document.getElementById('freeGrimsMessage').textContent = "You received 5 grims!";
         });
 
         // Load collection on page load
