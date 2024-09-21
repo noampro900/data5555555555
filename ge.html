@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grims Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        #shop, #collection {
+            display: none;
+        }
+        #shop img {
+            cursor: pointer;
+            width: 150px;
+            height: 150px;
+        }
+        #collection img {
+            width: 100px;
+            height: 100px;
+        }
+        #grimsDisplay {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="backgroundMusic" src="path_to_your_music.mp3" loop autoplay hidden></audio>
+
+    <h1>Welcome to the Grims Shop!</h1>
+    <div id="grimsDisplay">Grims: <span id="grims">0</span></div>
+    
+    <div id="shop">
+        <h2>Shop</h2>
+        <img id="item" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA149_20240922011550.png" alt="Item">
+        <p id="purchaseMessage"></p>
+    </div>
+    
+    <button id="myCollectionBtn">My Collection</button>
+
+    <div id="collection">
+        <h2>Your Collection</h2>
+        <div id="collectionImages">
+            <!-- Images will be shown here -->
+        </div>
+        <button id="backToShopBtn">Back to Shop</button>
+    </div>
+
+    <script>
+        // Grims counter
+        let grims = parseInt(localStorage.getItem('grims')) || 0;
+        document.getElementById('grims').textContent = grims;
+
+        // Collection
+        let collection = JSON.parse(localStorage.getItem('collection')) || [];
+
+        // Update grims every 7 minutes (420,000 ms)
+        setInterval(function() {
+            grims += 2;
+            document.getElementById('grims').textContent = grims;
+            localStorage.setItem('grims', grims); // Save to localStorage
+        }, 420000); // 7 minutes in milliseconds
+
+        // Display shop initially
+        document.getElementById('shop').style.display = 'block';
+
+        // Clicking on item to purchase
+        document.getElementById('item').addEventListener('click', function() {
+            if (grims >= 8) {
+                grims -= 8;
+                document.getElementById('grims').textContent = grims;
+                document.getElementById('purchaseMessage').textContent = "Purchase succeed!";
+                collection.push('https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA149_20240922011550.png');
+                localStorage.setItem('collection', JSON.stringify(collection)); // Save collection to localStorage
+                localStorage.setItem('grims', grims); // Update grims in localStorage
+            } else {
+                document.getElementById('purchaseMessage').textContent = "Not enough grims!";
+            }
+        });
+
+        // Show collection
+        document.getElementById('myCollectionBtn').addEventListener('click', function() {
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('collection').style.display = 'block';
+            const collectionDiv = document.getElementById('collectionImages');
+            collectionDiv.innerHTML = '';
+            collection.forEach(imagePath => {
+                const img = document.createElement('img');
+                img.src = imagePath;
+                collectionDiv.appendChild(img);
+            });
+        });
+
+        // Back to shop
+        document.getElementById('backToShopBtn').addEventListener('click', function() {
+            document.getElementById('collection').style.display = 'none';
+            document.getElementById('shop').style.display = 'block';
+        });
+
+        // Load collection on page load
+        window.onload = function() {
+            const collectionDiv = document.getElementById('collectionImages');
+            collectionDiv.innerHTML = '';
+            collection.forEach(imagePath => {
+                const img = document.createElement('img');
+                img.src = imagePath;
+                collectionDiv.appendChild(img);
+            });
+        };
+    </script>
+</body>
+</html>
