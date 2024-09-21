@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חנות החינם</title>
+    <style>
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Image Element -->
+<img id="teleportImage" src="https://noampro900.github.io/data5555555555/lv_0_20240921125848.gif" alt="Teleport Image" onclick="teleport()">
+
+<script>
+    // Check if the image has already been changed
+    if (localStorage.getItem('imageChanged') === 'true') {
+        document.getElementById('teleportImage').src = 'https://noampro900.github.io/data5555555555/lv_0_20240921130215-ezgif.com-video-to-gif-converter.gif'; // New image
+    }
+
+    function teleport() {
+        // Change the image permanently
+        document.getElementById('teleportImage').src = 'image2.jpg'; // New image
+        localStorage.setItem('imageChanged', 'true'); // Store in localStorage to keep the change
+
+        // Redirect to a new site
+        window.location.href = 'https://www.example.com'; // Change to the URL you want
+    }
+</script>
+
+</body>
+</html>
