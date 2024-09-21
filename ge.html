@@ -16,7 +16,7 @@
         #shop img {
             cursor: pointer;
             width: 100px;
-            height: px;
+            height: 100px;
         }
         #collection img {
             width: 100px;
@@ -40,7 +40,7 @@
         <p id="purchaseMessage"></p>
 
         <!-- New free Grims image -->
-        <h2>Get Free Grims</h2>
+        <h2>Get Free Grims (One-Time Offer)</h2>
         <img id="freeGrims" src="path_to_free_grims_image.png" alt="Get 5 Free Grims" width="200px" height="200px">
         <p id="freeGrimsMessage"></p>
     </div>
@@ -62,6 +62,9 @@
 
         // Collection
         let collection = JSON.parse(localStorage.getItem('collection')) || [];
+
+        // One-time offer flag for free grims
+        let hasClaimedFreeGrims = localStorage.getItem('hasClaimedFreeGrims') === 'true';
 
         // Update grims every 7 minutes (420,000 ms)
         setInterval(function() {
@@ -106,13 +109,25 @@
             document.getElementById('shop').style.display = 'block';
         });
 
-        // Clicking on the free grims image
+        // Handle free grims one-time offer
         document.getElementById('freeGrims').addEventListener('click', function() {
-            grims += 5;
-            document.getElementById('grims').textContent = grims;
-            localStorage.setItem('grims', grims); // Save to localStorage
-            document.getElementById('freeGrimsMessage').textContent = "You received 5 grims!";
+            if (!hasClaimedFreeGrims) {
+                grims += 5;
+                document.getElementById('grims').textContent = grims;
+                localStorage.setItem('grims', grims); // Save to localStorage
+                document.getElementById('freeGrimsMessage').textContent = "You received 5 grims!";
+                localStorage.setItem('hasClaimedFreeGrims', 'true'); // Mark offer as claimed
+                hasClaimedFreeGrims = true;
+                document.getElementById('freeGrims').style.display = 'none'; // Hide free grims image
+            } else {
+                document.getElementById('freeGrimsMessage').textContent = "You have already claimed your free grims!";
+            }
         });
+
+        // Hide free grims image if already claimed
+        if (hasClaimedFreeGrims) {
+            document.getElementById('freeGrims').style.display = 'none';
+        }
 
         // Load collection on page load
         window.onload = function() {
