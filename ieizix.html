@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grims Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        #shop, #collection {
+            display: none;
+        }
+        #shop img {
+            cursor: pointer;
+            width: 100px;
+            height: 100px;
+        }
+        #collection img {
+            width: 100px;
+            height: 100px;
+        }
+        #grimsDisplay {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="backgroundMusic" src="path_to_your_music.mp3" loop autoplay hidden></audio>
+
+    <h1>Welcome!</h1>
+    <div id="grimsDisplay">Grims: <span id="grims">0</span></div>
+
+    <div id="shop">
+        <h2>Shop</h2>
+        <img id="item" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA149_20240922011550%20(2).png" alt="Item">
+        <p id="purchaseMessage"></p>
+
+        <!-- First one-time free Grims offer (expires 30 September 2024) -->
+        <img id="freeGrims" src="path_to_free_grims_image" alt="Get 1 Free Grims" width="200px" height="200px">
+        <p id="freeGrimsMessage"></p>
+
+        <!-- Second picture offer (available 4 October 2024, costs 72 Grims) -->
+        <img id="pictureOffer" src="path_to_picture_offer_image" alt="Buy Picture for 72 Grims" width="200px" height="200px" style="display:none;">
+        <p id="pictureOfferMessage"></p>
+
+        <!-- Third 40 Grims offer (unlocked after 72 Grims picture purchase, expires 8 October 2024) -->
+        <img id="bonusGrimsOffer" src="path_to_bonus_grims_image" alt="Get 40 Free Grims" width="200px" height="200px" style="display:none;">
+        <p id="bonusGrimsMessage"></p>
+    </div>
+
+    <button id="myCollectionBtn">My Collection</button>
+
+    <div id="collection">
+        <h2>Your Collection</h2>
+        <div id="collectionImages">
+            <!-- Images will be shown here -->
+        </div>
+        <button id="backToShopBtn">Back to Shop</button>
+    </div>
+
+    <script>
+        let grims = parseInt(localStorage.getItem('grims')) || 0;
+        document.getElementById('grims').textContent = grims;
+
+        let collection = JSON.parse(localStorage.getItem('collection')) || [];
+
+        let hasClaimedFreeGrims = localStorage.getItem('hasClaimedFreeGrims') === 'true';
+        let hasClaimedPictureOffer = localStorage.getItem('hasClaimedPictureOffer') === 'true';
+        let hasClaimedBonusGrims = localStorage.getItem('hasClaimedBonusGrims') === 'true';
+
+        const freeGrimsDeadline = new Date("2024-09-30T23:00:00").getTime();
+        const pictureOfferStart = new Date("2024-10-04T00:00:58").getTime();
+        const bonusGrimsDeadline = new Date("2024-10-08T09:09:01").getTime();
+
+        let now = new Date().getTime();
+
+        // Display free Grims offer before the deadline
+        if (!hasClaimedFreeGrims && now <= freeGrimsDeadline) {
+            document.getElementById('freeGrims').style.display = 'block';
+        }
+
+        // Handle free Grims offer
+        document.getElementById('freeGrims').addEventListener('click', function() {
+            if (!hasClaimedFreeGrims) {
+                grims += 1;
+                document.getElementById('grims').textContent = grims;
+                localStorage.setItem('grims', grims);
+                localStorage.setItem('hasClaimedFreeGrims', 'true');
+                document.getElementById('freeGrimsMessage').textContent = "You received 1 free Grims!";
+                hasClaimedFreeGrims = true;
+                document.getElementById('freeGrims').style.display = 'none';
+            }
+        });
+
+        // Display picture offer if it's the correct time
+        if (!hasClaimedPictureOffer && now >= pictureOfferStart) {
+            document.getElementById('pictureOffer').style.display = 'block';
+        }
+
+        // Handle picture offer purchase
+        document.getElementById('pictureOffer').addEventListener('click', function() {
+            if (grims >= 72) {
+                grims -= 72;
+                document.getElementById('grims').textContent = grims;
+                localStorage.setItem('grims', grims);
+                localStorage.setItem('hasClaimedPictureOffer', 'true');
+                document.getElementById('pictureOfferMessage').textContent = "You purchased the picture!";
+                hasClaimedPictureOffer = true;
+                document.getElementById('pictureOffer').style.display = 'none';
+
+                // Unlock the bonus Grims offer
+                document.getElementById('bonusGrimsOffer').style.display = 'block';
+            } else {
+                document.getElementById('pictureOfferMessage').textContent = "Not enough Grims!";
+            }
+        });
+
+        // Display bonus Grims offer if picture was purchased and before the deadline
+        if (hasClaimedPictureOffer && now <= bonusGrimsDeadline) {
+            document.getElementById('bonusGrimsOffer').style.display = 'block';
+        }
+
+        // Handle bonus Grims offer
+        document.getElementById('bonusGrimsOffer').addEventListener('click', function() {
+            if (!hasClaimedBonusGrims) {
+                grims += 40;
+                document.getElementById('grims').textContent = grims;
+                localStorage.setItem('grims', grims);
+                localStorage.setItem('hasClaimedBonusGrims', 'true');
+                document.getElementById('bonusGrimsMessage').textContent = "You received 40 free Grims!";
+                hasClaimedBonusGrims = true;
+                document.getElementById('bonusGrimsOffer').style.display = 'none';
+            }
+        });
+
+        // Collection button handling
+        document.getElementById('myCollectionBtn').addEventListener('click', function() {
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('collection').style.display = 'block';
+
+            // Load the collection images
+            const collectionDiv = document.getElementById('collectionImages');
+            collectionDiv.innerHTML = '';
+            collection.forEach(imagePath => {
+                const img = document.createElement('img');
+                img.src = imagePath;
+                collectionDiv.appendChild(img);
+            });
+        });
+
+        // Back to shop button
+        document.getElementById('backToShopBtn').addEventListener('click', function() {
+            document.getElementById('collection').style.display = 'none';
+            document.getElementById('shop').style.display = 'block';
+        });
+
+        // Hide offers if expired
+        if (now > freeGrimsDeadline) {
+            document.getElementById('freeGrims').style.display = 'none';
+        }
+
+        if (now > bonusGrimsDeadline) {
+            document.getElementById('bonusGrimsOffer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
