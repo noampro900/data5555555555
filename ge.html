@@ -48,8 +48,12 @@
         <p id="limitedOfferMessage"></p>
 
         <!-- New 1 Free Grim Offer -->
-        <img id="oneFreeGrim" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA161_20240924125431.png" alt="Get 1 Free Grim" width="200px" height="200px">
+        <img id="oneFreeGrim" src="https://noampro900.github.io/data5555555555/free-grim.gif" alt="Get 1 Free Grim" width="200px" height="200px">
         <p id="oneFreeGrimMessage"></p>
+
+        <!-- New limited-time picture purchase offer -->
+        <img id="limitedPictureOffer" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA162_20240924131217.png" alt="Limited Time Picture" width="200px" height="200px" style="display:none;">
+        <p id="limitedPictureMessage"></p>
     </div>
     
     <button id="myCollectionBtn">My Collection</button>
@@ -74,10 +78,13 @@
         let hasClaimedFreeGrims = localStorage.getItem('hasClaimedFreeGrims') === 'true';
         let hasClaimedLimitedOffer = localStorage.getItem('hasClaimedLimitedOffer') === 'true';
         let hasClaimedOneFreeGrim = localStorage.getItem('hasClaimedOneFreeGrim') === 'true';
+        let hasPurchasedLimitedPicture = localStorage.getItem('hasPurchasedLimitedPicture') === 'true';
 
         // Offer deadlines
         let offerDeadline = new Date("2024-09-24T04:00:20").getTime();
         let oneFreeGrimDeadline = new Date("2024-10-02T00:00:00").getTime();
+        let limitedPictureStart = new Date("2024-10-04T00:00:04").getTime();
+        let limitedPictureEnd = new Date("2024-10-04T08:00:10").getTime();
 
         // Update grims every 7 minutes (420,000 ms)
         setInterval(function() {
@@ -178,6 +185,41 @@
                 document.getElementById('oneFreeGrimMessage').textContent = "You have already claimed your free Grim!";
             }
         });
+
+        // Handle limited-time picture offer
+        function checkLimitedPictureOffer() {
+            let now = new Date().getTime();
+            if (!hasPurchasedLimitedPicture && now >= limitedPictureStart && now <= limitedPictureEnd) {
+                document.getElementById('limitedPictureOffer').style.display = 'block'; // Show the offer image
+            } else {
+                document.getElementById('limitedPictureOffer').style.display = 'none'; // Hide if expired
+            }
+        }
+
+        document.getElementById('limitedPictureOffer').addEventListener('click', function() {
+            let now = new Date().getTime();
+            if (!hasPurchasedLimitedPicture && now >= limitedPictureStart && now <= limitedPictureEnd) {
+                if (grims >= 1) {
+                    grims -= 1;
+                    document.getElementById('grims').textContent = grims;
+                    localStorage.setItem('grims', grims); // Save to localStorage
+                    document.getElementById('limitedPictureMessage').textContent = "You purchased the picture!";
+                    collection.push('https://noampro900.github.io/data5555555555/20240924_130927.jpg'); // Add picture to collection
+                    localStorage.setItem('collection', JSON.stringify(collection)); // Save collection
+                    localStorage.setItem('hasPurchasedLimitedPicture', 'true'); // Mark as purchased
+                    hasPurchasedLimitedPicture = true;
+                    document.getElementById('limitedPictureOffer').style.display = 'none'; // Hide offer image
+                } else {
+                    document.getElementById('limitedPictureMessage').textContent = "Not enough grims!";
+                }
+            } else if (now > limitedPictureEnd) {
+                document.getElementById('limitedPictureMessage').textContent = "The offer has expired!";
+            }
+        });
+
+        // Check the picture offer on page load and at intervals
+        checkLimitedPictureOffer();
+        setInterval(checkLimitedPictureOffer, 60000); // Check every minute
 
         // Hide free grims image if already claimed
         if (hasClaimedFreeGrims) {
