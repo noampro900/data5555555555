@@ -39,6 +39,14 @@
         <img id="item" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA149_20240922011550%20(2).png" alt="Item">
         <p id="purchaseMessage"></p>
 
+        <!-- Promo Code Section -->
+        <div id="promoCodeSection">
+            <h3>Enter Promo Code</h3>
+            <input type="text" id="promoCodeInput" placeholder="Enter your promo code">
+            <button id="redeemButton">Redeem Code</button>
+            <p id="promoMessage"></p>
+        </div>
+
         <!-- Existing 5 Free Grims Offer -->
         <img id="freeGrims" src="https://noampro900.github.io/data5555555555/20240922_022343.gif" alt="Get 5 Free Grims" width="200px" height="200px">
         <p id="freeGrimsMessage"></p>
@@ -74,17 +82,45 @@
         // Collection
         let collection = JSON.parse(localStorage.getItem('collection')) || [];
 
-        // One-time offer flags
-        let hasClaimedFreeGrims = localStorage.getItem('hasClaimedFreeGrims') === 'true';
-        let hasClaimedLimitedOffer = localStorage.getItem('hasClaimedLimitedOffer') === 'true';
-        let hasClaimedOneFreeGrim = localStorage.getItem('hasClaimedOneFreeGrim') === 'true';
-        let hasPurchasedLimitedPicture = localStorage.getItem('hasPurchasedLimitedPicture') === 'true';
+        // Promo code redemption statuses (stored in localStorage)
+        let promoCodesRedeemed = JSON.parse(localStorage.getItem('promoCodesRedeemed')) || {};
 
-        // Offer deadlines
-        let offerDeadline = new Date("2024-09-24T04:00:20").getTime();
-        let oneFreeGrimDeadline = new Date("2024-10-02T00:00:00").getTime();
-        let limitedPictureStart = new Date("2024-10-04T00:00:04").getTime();
-        let limitedPictureEnd = new Date("2024-10-04T08:00:10").getTime();
+        // Function to save redeemed status
+        function saveRedeemedStatus(code) {
+            promoCodesRedeemed[code] = true;
+            localStorage.setItem('promoCodesRedeemed', JSON.stringify(promoCodesRedeemed));
+        }
+
+        // Promo code functionality
+        document.getElementById('redeemButton').addEventListener('click', function() {
+            const promoCode = document.getElementById('promoCodeInput').value;
+            let message = '';
+
+            // Check if the promo code was already redeemed
+            if (promoCodesRedeemed[promoCode]) {
+                message = 'This promo code has already been redeemed.';
+            } else {
+                if (promoCode === 'ilovethisgame') {
+                    grims += 100;
+                    message = 'Promo code applied! You received 100 Grims!';
+                    saveRedeemedStatus(promoCode);  // Mark as redeemed
+                } else if (promoCode === 'wonbscode--4455pok2po232345') {
+                    grims += 2;
+                    message = 'Promo code applied! You received 2 Grims!';
+                    saveRedeemedStatus(promoCode);  // Mark as redeemed
+                } else if (promoCode === 'wonbscode--659oo874534857oo') {
+                    grims += 2;
+                    message = 'Promo code applied! You received 2 Grims!';
+                    saveRedeemedStatus(promoCode);  // Mark as redeemed
+                } else {
+                    message = 'Invalid promo code. Please try again.';
+                }
+            }
+
+            document.getElementById('grims').textContent = grims;
+            localStorage.setItem('grims', grims);
+            document.getElementById('promoMessage').textContent = message;
+        });
 
         // Update grims every 7 minutes (420,000 ms)
         setInterval(function() {
@@ -131,13 +167,12 @@
 
         // Handle free grims one-time offer (5 Grims)
         document.getElementById('freeGrims').addEventListener('click', function() {
-            if (!hasClaimedFreeGrims) {
+            if (!localStorage.getItem('hasClaimedFreeGrims')) {
                 grims += 5;
                 document.getElementById('grims').textContent = grims;
                 localStorage.setItem('grims', grims); // Save to localStorage
                 document.getElementById('freeGrimsMessage').textContent = "You received 5 grims!";
                 localStorage.setItem('hasClaimedFreeGrims', 'true'); // Mark offer as claimed
-                hasClaimedFreeGrims = true;
                 document.getElementById('freeGrims').style.display = 'none'; // Hide free grims image
             } else {
                 document.getElementById('freeGrimsMessage').textContent = "You have already claimed your free grims!";
@@ -147,14 +182,13 @@
         // Handle limited-time free 15 grims offer
         document.getElementById('limitedOfferGrims').addEventListener('click', function() {
             let now = new Date().getTime();
-            if (!hasClaimedLimitedOffer) {
+            if (!localStorage.getItem('hasClaimedLimitedOffer')) {
                 if (now <= offerDeadline) {
                     grims += 15;
                     document.getElementById('grims').textContent = grims;
                     localStorage.setItem('grims', grims); // Save to localStorage
                     document.getElementById('limitedOfferMessage').textContent = "You received 15 grims!";
                     localStorage.setItem('hasClaimedLimitedOffer', 'true'); // Mark offer as claimed
-                    hasClaimedLimitedOffer = true;
                     document.getElementById('limitedOfferGrims').style.display = 'none'; // Hide free grims image
                 } else {
                     document.getElementById('limitedOfferMessage').textContent = "The offer has expired!";
@@ -168,14 +202,13 @@
         // Handle limited-time 1 free Grim offer
         document.getElementById('oneFreeGrim').addEventListener('click', function() {
             let now = new Date().getTime();
-            if (!hasClaimedOneFreeGrim) {
+            if (!localStorage.getItem('hasClaimedOneFreeGrim')) {
                 if (now <= oneFreeGrimDeadline) {
                     grims += 1;
                     document.getElementById('grims').textContent = grims;
                     localStorage.setItem('grims', grims); // Save to localStorage
                     document.getElementById('oneFreeGrimMessage').textContent = "You received 1 Grim!";
                     localStorage.setItem('hasClaimedOneFreeGrim', 'true'); // Mark offer as claimed
-                    hasClaimedOneFreeGrim = true;
                     document.getElementById('oneFreeGrim').style.display = 'none'; // Hide free Grim image
                 } else {
                     document.getElementById('oneFreeGrimMessage').textContent = "The offer has expired!";
@@ -189,7 +222,7 @@
         // Handle limited-time picture offer
         function checkLimitedPictureOffer() {
             let now = new Date().getTime();
-            if (!hasPurchasedLimitedPicture && now >= limitedPictureStart && now <= limitedPictureEnd) {
+            if (!localStorage.getItem('hasPurchasedLimitedPicture') && now >= limitedPictureStart && now <= limitedPictureEnd) {
                 document.getElementById('limitedPictureOffer').style.display = 'block'; // Show the offer image
             } else {
                 document.getElementById('limitedPictureOffer').style.display = 'none'; // Hide if expired
@@ -198,7 +231,7 @@
 
         document.getElementById('limitedPictureOffer').addEventListener('click', function() {
             let now = new Date().getTime();
-            if (!hasPurchasedLimitedPicture && now >= limitedPictureStart && now <= limitedPictureEnd) {
+            if (!localStorage.getItem('hasPurchasedLimitedPicture') && now >= limitedPictureStart && now <= limitedPictureEnd) {
                 if (grims >= 1) {
                     grims -= 1;
                     document.getElementById('grims').textContent = grims;
@@ -207,7 +240,6 @@
                     collection.push('https://noampro900.github.io/data5555555555/20240924_130927.jpg'); // Add picture to collection
                     localStorage.setItem('collection', JSON.stringify(collection)); // Save collection
                     localStorage.setItem('hasPurchasedLimitedPicture', 'true'); // Mark as purchased
-                    hasPurchasedLimitedPicture = true;
                     document.getElementById('limitedPictureOffer').style.display = 'none'; // Hide offer image
                 } else {
                     document.getElementById('limitedPictureMessage').textContent = "Not enough grims!";
@@ -222,17 +254,17 @@
         setInterval(checkLimitedPictureOffer, 60000); // Check every minute
 
         // Hide free grims image if already claimed
-        if (hasClaimedFreeGrims) {
+        if (localStorage.getItem('hasClaimedFreeGrims')) {
             document.getElementById('freeGrims').style.display = 'none';
         }
 
         // Hide limited-time offer if already claimed or expired
-        if (hasClaimedLimitedOffer || new Date().getTime() > offerDeadline) {
+        if (localStorage.getItem('hasClaimedLimitedOffer') || new Date().getTime() > offerDeadline) {
             document.getElementById('limitedOfferGrims').style.display = 'none';
         }
 
         // Hide 1 free Grim image if already claimed or expired
-        if (hasClaimedOneFreeGrim || new Date().getTime() > oneFreeGrimDeadline) {
+        if (localStorage.getItem('hasClaimedOneFreeGrim') || new Date().getTime() > oneFreeGrimDeadline) {
             document.getElementById('oneFreeGrim').style.display = 'none';
         }
 
