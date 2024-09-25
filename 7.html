@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>liya</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        video {
+            width: 80%;
+            height: auto;
+        }
+        #countdown {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video section -->
+    <video id="myVideo" autoplay muted playsinline>
+        <source src="https://noampro900.github.io/data5555555555/lv_0_20240925230212.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Audio section for looping music -->
+    <audio id="myAudio" autoplay loop>
+        <source src="https://noampro900.github.io/data5555555555/lv_0_20240925230212.mp4" type="audio/mp4">
+        Your browser does not support the audio tag.
+    </audio>
+
+    <!-- Countdown timer -->
+    <div id="countdown"></div>
+
+    <script>
+        // Video control to loop once and disable stop functions
+        const video = document.getElementById('myVideo');
+        video.loop = false;
+        video.controls = false;
+        video.addEventListener('ended', function() {
+            video.pause(); // Disable looping after one run
+        });
+
+        // Countdown timer script
+        const countdownDate = new Date("Jan 21, 2025 02:00:05").getTime();
+        const countdownElement = document.getElementById("countdown");
+
+        const countdownInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const timeLeft = countdownDate - now;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                countdownElement.innerHTML = "Countdown reached!";
+            } else {
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = `Countdown: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>
