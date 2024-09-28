@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Shorts Style Videos</title>
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .video-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="videos"></div>
+
+    <script>
+        // List of YouTube video IDs
+        const videoIDs = [
+            'FbZuQ84TNB8', // Replace with real video IDs
+            'PdKguZ2borA',
+            'L5MiJWhYzvg',
+            '-oAfu5OnUUw',
+            'QWmprkeBBB0',
+            'nWy81uTlMDQ',
+            'VAXfWldXZ',
+            '_rlkyP-sWzE',
+            'nydiUc3aA',
+            'XjrhL2WYPKs',
+            '4fLFQU40svA',
+            'oupfQw0lGSs',
+            'ebVh58MGIK8'
+        ];
+
+        // Shuffle the video array randomly
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        shuffle(videoIDs);
+
+        // Dynamically create video iframes
+        const videosContainer = document.getElementById('videos');
+        videoIDs.forEach(id => {
+            const videoDiv = document.createElement('div');
+            videoDiv.classList.add('video-container');
+            videoDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+            videosContainer.appendChild(videoDiv);
+        });
+    </script>
+
+</body>
+</html>
