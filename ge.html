@@ -62,11 +62,6 @@
         <!-- New limited-time picture purchase offer -->
         <img id="limitedPictureOffer" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA162_20240924131217.png" alt="Limited Time Picture" width="200px" height="200px" style="display:none;">
         <p id="limitedPictureMessage"></p>
-
-        <!-- New offer: Picture costing 170 grims -->
-        <img id="offerPicture" src="https://noampro900.github.io/data5555555555/%D7%97%D7%A1%D7%A8%20%D7%9B%D7%95%D7%AA%D7%A8%D7%AA173_20240928120356.png" alt="Offer Picture" width="200px" height="200px">
-        <p id="offerMessage"></p>
-
     </div>
     
     <button id="myCollectionBtn">My Collection</button>
@@ -254,20 +249,6 @@
                 }
             } else if (now > limitedPictureEnd) {
                 document.getElementById('limitedPictureMessage').textContent = "The offer has expired!";
-            }
-        });
-
-        // Handle picture offer costing 170 grims
-        document.getElementById('https://noampro900.github.io/data5555555555/20240928_120051.jpg').addEventListener('click', function() {
-            if (grims >= 170) {
-                grims -= 170;
-                document.getElementById('grims').textContent = grims;
-                localStorage.setItem('grims', grims); // Save to localStorage
-                document.getElementById('offerMessage').textContent = "You purchased the offer picture!";
-                collection.push('https://your-offer-picture-link-here'); // Add picture to collection
-                localStorage.setItem('collection', JSON.stringify(collection)); // Save collection
-            } else {
-                document.getElementById('offerMessage').textContent = "Not enough grims!";
             }
         });
 
