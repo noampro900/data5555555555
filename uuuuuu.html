@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .online-counter {
+            font-size: 2em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to the site</h1>
+    <div class="online-counter">
+        People online: <span id="peopleOnline">0</span>
+    </div>
+
+    <script>
+        // Function to update the displayed online count
+        function updateOnlineCount(count) {
+            document.getElementById('peopleOnline').textContent = count;
+        }
+
+        // Replace this function with your server-side logic
+        async function fetchOnlineCount() {
+            try {
+                // Example of fetching online count from a server
+                // Replace 'your-server-url' with your actual server endpoint
+                const response = await fetch('your-server-url/online-count'); // e.g., '/api/online-count'
+                if (response.ok) {
+                    const data = await response.json();
+                    updateOnlineCount(data.count); // Assuming your server responds with { count: <number> }
+                } else {
+                    console.error('Error fetching online count:', response.status);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+
+        // Simulate fetching online count every 0.3 seconds
+        setInterval(() => {
+            fetchOnlineCount(); // Call the function to get online count
+        }, 300); // Update every 0.3 seconds
+    </script>
+
+</body>
+</html>
