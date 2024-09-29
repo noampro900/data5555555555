@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Points Game</title>
+    <script>
+        // Time delay between clicks: 10 hours, 20 minutes, and 5 seconds
+        const DELAY = 10 * 60 * 60 * 1000 + 20 * 60 * 1000 + 5 * 1000; // 10h 20m 5s in milliseconds
+
+        // Check if the player can click the button
+        function canClick() {
+            const lastClicked = localStorage.getItem('lastClickTime');
+            if (lastClicked) {
+                const now = Date.now();
+                const elapsed = now - parseInt(lastClicked);
+                return elapsed >= DELAY;
+            }
+            return true;
+        }
+
+        // Update points and time when button is clicked
+        function clickButton() {
+            if (!canClick()) {
+                const nextClickTime = new Date(parseInt(localStorage.getItem('lastClickTime')) + DELAY);
+                alert('You can only play once every 10 hours, 20 minutes, and 5 seconds.\nNext play time: ' + nextClickTime);
+                return;
+            }
+
+            const points = Math.floor(Math.random() * 19) + 2; // Random number between 2 and 20
+            const currentPoints = parseInt(localStorage.getItem('points')) || 0;
+            const newPoints = currentPoints + points;
+            localStorage.setItem('points', newPoints);
+            localStorage.setItem('lastClickTime', Date.now());
+
+            document.getElementById('result').innerText = 'You earned ' + points + ' points!';
+            document.getElementById('totalPoints').innerText = 'Total points: ' + newPoints;
+        }
+
+        // Display current points and disable button if necessary
+        function updateUI() {
+            const totalPoints = localStorage.getItem('points') || 0;
+            document.getElementById('totalPoints').innerText = 'Total points: ' + totalPoints;
+            
+            if (!canClick()) {
+                const nextClickTime = new Date(parseInt(localStorage.getItem('lastClickTime')) + DELAY);
+                document.getElementById('button').disabled = true;
+                document.getElementById('result').innerText = 'Next play time: ' + nextClickTime;
+            }
+        }
+
+        window.onload = function() {
+            updateUI();
+        }
+    </script>
+</head>
+<body>
+    <h1>Random Points Game</h1>
+    <p id="totalPoints">Total points: 0</p>
+    <p id="result"></p>
+    <button id="button" onclick="clickButton()">Get Random Points</button>
+</body>
+</html>
