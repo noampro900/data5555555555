@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Site</title>
+    <script>
+        // Request notification permission
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
+        // Function to send notification
+        function sendNotification(message) {
+            if (Notification.permission === 'granted') {
+                new Notification(message);
+            }
+        }
+
+        // Function to check the current time and send alerts
+        function checkAlerts() {
+            const now = new Date();
+
+            // Alert number 1 at 30 September 2024 18:50:15
+            const alert1Time = new Date('2024-09-30T18:50:15');
+            if (now >= alert1Time && now < new Date(alert1Time.getTime() + 1000)) {
+                sendNotification("Alert number 1");
+            }
+
+            // Alert number 2 at 15 October 2024
+            const alert2Time = new Date('2024-10-15T00:00:00');
+            if (now >= alert2Time && now < new Date(alert2Time.getTime() + 1000)) {
+                sendNotification("Alert number 2");
+            }
+
+            // Check if there's any text-based alert from the second site
+            const customAlert = localStorage.getItem('customAlert');
+            if (customAlert) {
+                sendNotification(customAlert);
+                localStorage.removeItem('customAlert'); // Clear the custom alert after sending
+            }
+        }
+
+        // Run checkAlerts function every second
+        setInterval(checkAlerts, 1000);
+    </script>
+</head>
+<body>
+</body>
+</html>
