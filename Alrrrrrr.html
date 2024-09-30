@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Entry Site</title>
+    <script>
+        function sendAlert() {
+            const alertText = document.getElementById("alertText").value;
+            if (alertText) {
+                // Store the alert in localStorage to be picked up by the first site
+                localStorage.setItem('customAlert', alertText);
+                alert("Alert sent to the first site!");
+            }
+        }
+    </script>
+</head>
+<body>
+    <label for="alertText">Enter text alert:</label>
+    <input type="text" id="alertText">
+    <button onclick="sendAlert()">Send Alert</button>
+</body>
+</html>
