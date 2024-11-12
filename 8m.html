@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer with GIF and Label</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .top-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .gif-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        .label {
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            margin-left: 20px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .timer {
+            text-align: center;
+            font-size: 2em;
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-container">
+        <div class="gif-container">
+            <img src="https://noampro900.github.io/data5555555555/20241101-151633-unscreen.gif" alt="Countdown GIF">
+        </div>
+        <div class="label">שמינה בובה הסדרה מתחילה ב.....</div>
+    </div>
+
+    <div class="timer" id="countdown">
+        Loading...
+    </div>
+
+    <script>
+        function countdown() {
+            const targetDate = new Date("December 8, 2024 00:00:00").getTime();
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference <= 0) {
+                document.getElementById("countdown").innerHTML = "The date has arrived!";
+                return;
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = 
+                `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        setInterval(countdown, 1000);
+    </script>
+</body>
+</html>
