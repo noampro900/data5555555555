@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Coin Gamble Game with Bots</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #coinLabel, #powerLabel, #claimStatus, #botStatus {
+      font-size: 18px;
+      margin: 10px;
+    }
+    #result {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    img {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    // Backend API connection
+    const API_URL = 'http://localhost:5000'; // Adjust if needed
+
+    // Load the current state from the backend API
+    async function loadState() {
+      try {
+        const response = await fetch(`${API_URL}/api/user/state`);
+        const data = await response.json();
+        coins = data.coins;
+        powerLevel = data.power;
+        freeRolls = data.freeRolls;
+        claimStored = data.claimStored;
+        lastClaim = data.lastClaim;
+        lastPlay = data.lastPlay;
+        botCoins = data.botCoins;
+        lastStealByBot = data.lastStealByBot;
+        lastStealByPlayer = data.lastStealByPlayer;
+        updateUI();
+      } catch (error) {
+        console.error('Error loading state:', error);
+      }
+    }
+
+    // Save the current state to the backend API
+    async function saveState() {
+      try {
+        await fetch(`${API_URL}/api/user/state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coins,
+            power: powerLevel,
+            freeRolls,
+            claimStored,
+            lastClaim,
+            lastPlay,
+            botCoins,
+            lastStealByBot,
+            lastStealByPlayer
+          })
+        });
+      } catch (error) {
+        console.error('Error saving state:', error);
+      }
+    }
+
+    // Dorpo Coin API integration
+    async function loadDorpoState() {
+      try {
+        const res = await fetch(`${API_URL}/api/user/dorpo`);
+        const data = await res.json();
+        dorpoCoins = data.dorpoCoins;
+        lastDorpoClaim = data.lastDorpoClaim;
+        updateDorpoUI();
+      } catch (error) {
+        console.error('Error loading Dorpo state:', error);
+      }
+    }
+
+    // Update the UI with the Dorpo Coins state
+    function updateDorpoUI() {
+      const now = Date.now();
+      const dorpoUI = document.getElementById("dorpoCoinUI");
+
+      if (now >= dorpoStart && now <= dorpoEnd) {
+        dorpoUI.style.display = "block";
+        document.getElementById("dorpoCoinCount").textContent = dorpoCoins;
+      } else {
+        dorpoUI.style.display = "none";
+      }
+    }
+
+    // Redeem offer
+    function redeemOffer(offerId) {
+      if (Date.now() < dorpoStart || Date.now() > dorpoEnd) {
+        alert("Dorpo Coin offers are not available now.");
+        return;
+      }
+
+      // Your offer redemption logic here
+      // ...
+    }
+
+    // Initialization on page load
+    window.onload = function() {
+      loadState();
+      loadDorpoState();
+      setInterval(updateDorpoUI, 1000);
+    }
+  </script>
+</head>
+<body>
+  <div id="coinLabel">Coins: 0</div>
+  <div id="powerLabel">Storage Power: 1</div>
+  <div>lose or win coins! below the text in the image</div>
+  <img id="gambleButton" src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4npqh-DshHZfa9UKc1BqkyN4k6JWi74wVRhARqzDinDbezY--Dca20CSOe15fZKYKNLFjctmD7ok5ak9H3NMham82b9FkuwVIgL6G_GwkQr02TPRJRYgIYI7C72iSXAunqHGWy6I=w184-h184-n-k-no" alt="Gamble">
+  <div id="result"></div>
+
+  <button onclick="claimCoins()">Claim</button>
+  <div id="claimStatus"></div>
+  
+  <div id="dorpoCoinUI" style="display:none;"></div>
+  <p>Dorpo Coins: <span id="dorpoCoinCount">0</span></p>
+  <button onclick="claimDorpoCoins()">Claim Dorpo Coin</button>
+  
+  <button onclick="upgradePower()">Upgrade Wallet</button>
+  <button id="stealButton" onclick="stealFromBot()">Steal from Bot</button>
+  <div id="botStatus"></div>
+
+  <h2>Offers</h2>
+  <div id="offers">
+    <div><button onclick="redeemOffer(1)">Offer 1: Trade 10,050 Dorpo Coins for 20 Coins</button></div>
+    <div><button onclick="redeemOffer(2)">Offer 2: Trade 810,000 Dorpo Coins for 80 Coins</button></div>
+    <div><button onclick="redeemOffer(3)">Offer 3: Trade 920,000 Dorpo Coins for 170 Coins</button></div>
+    <div><button onclick="redeemOffer(4)">Offer 4: Trade 750,000 Dorpo Coins for 77 Coins</button></div>
+    <div id="delayed-offer" style="display: none;">
+      <button onclick="redeemOffer(5)">Offer 5: Trade 980,000 Dorpo Coins for 180 Coins</button>
+    </div>
+  </div>
+
+  <script>
+    // Game logic and other functions here
+    // Example: gamble(), upgradePower(), stealFromBot(), etc.
+  </script>
+</body>
+</html>
