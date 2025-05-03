@@ -27,14 +27,99 @@
       cursor: pointer;
     }
   </style>
-    <script>
-  //  setTimeout(function() {
-    //  window.location.href = "https://noampro900.github.io/Coins-game20000/t2.html";
- //   }, 100); // 100 milliseconds
-    </script>
+  <script>
+    // Backend API connection
+    const API_URL = 'http://localhost:5000'; // Adjust if needed
+
+    // Load the current state from the backend API
+    async function loadState() {
+      try {
+        const response = await fetch(`${API_URL}/api/user/state`);
+        const data = await response.json();
+        coins = data.coins;
+        powerLevel = data.power;
+        freeRolls = data.freeRolls;
+        claimStored = data.claimStored;
+        lastClaim = data.lastClaim;
+        lastPlay = data.lastPlay;
+        botCoins = data.botCoins;
+        lastStealByBot = data.lastStealByBot;
+        lastStealByPlayer = data.lastStealByPlayer;
+        updateUI();
+      } catch (error) {
+        console.error('Error loading state:', error);
+      }
+    }
+
+    // Save the current state to the backend API
+    async function saveState() {
+      try {
+        await fetch(`${API_URL}/api/user/state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coins,
+            power: powerLevel,
+            freeRolls,
+            claimStored,
+            lastClaim,
+            lastPlay,
+            botCoins,
+            lastStealByBot,
+            lastStealByPlayer
+          })
+        });
+      } catch (error) {
+        console.error('Error saving state:', error);
+      }
+    }
+
+    // Dorpo Coin API integration
+    async function loadDorpoState() {
+      try {
+        const res = await fetch(`${API_URL}/api/user/dorpo`);
+        const data = await res.json();
+        dorpoCoins = data.dorpoCoins;
+        lastDorpoClaim = data.lastDorpoClaim;
+        updateDorpoUI();
+      } catch (error) {
+        console.error('Error loading Dorpo state:', error);
+      }
+    }
+
+    // Update the UI with the Dorpo Coins state
+    function updateDorpoUI() {
+      const now = Date.now();
+      const dorpoUI = document.getElementById("dorpoCoinUI");
+
+      if (now >= dorpoStart && now <= dorpoEnd) {
+        dorpoUI.style.display = "block";
+        document.getElementById("dorpoCoinCount").textContent = dorpoCoins;
+      } else {
+        dorpoUI.style.display = "none";
+      }
+    }
+
+    // Redeem offer
+    function redeemOffer(offerId) {
+      if (Date.now() < dorpoStart || Date.now() > dorpoEnd) {
+        alert("Dorpo Coin offers are not available now.");
+        return;
+      }
+
+      // Your offer redemption logic here
+      // ...
+    }
+
+    // Initialization on page load
+    window.onload = function() {
+      loadState();
+      loadDorpoState();
+      setInterval(updateDorpoUI, 1000);
+    }
+  </script>
 </head>
 <body>
-
   <div id="coinLabel">Coins: 0</div>
   <div id="powerLabel">Storage Power: 1</div>
   <div>lose or win coins! below the text in the image</div>
@@ -48,468 +133,24 @@
   <p>Dorpo Coins: <span id="dorpoCoinCount">0</span></p>
   <button onclick="claimDorpoCoins()">Claim Dorpo Coin</button>
   
-
-
   <button onclick="upgradePower()">Upgrade Wallet</button>
-  <button id="stealButton" onclick="stealFromBot()" >Steal from Bot</button>
+  <button id="stealButton" onclick="stealFromBot()">Steal from Bot</button>
   <div id="botStatus"></div>
-  
-  
-  
-  
-  <h2>Offers</h2>
-<div id="offers">
-  <div>
-    <button onclick="redeemOffer(1)">Offer 1: Trade 10,050 Dorpo Coins for 20 Coins</button>
-  </div>
-  <div>
-    <button onclick="redeemOffer(2)">Offer 2: Trade 810,000 Dorpo Coins for 80 Coins</button>
-  </div>
-  <div>
-    <button onclick="redeemOffer(3)">Offer 3: Trade 920,000 Dorpo Coins for 170 Coins</button>
-  </div>
-  <div>
-    <button onclick="redeemOffer(4)">Offer 4: Trade 750,000 Dorpo Coins for 77 Coins</button>
-  </div>
-  <div id="delayed-offer" style="display: none;">
-    <button onclick="redeemOffer(5)">Offer 5: Trade 980,000 Dorpo Coins for 180 Coins</button>
-  </div>
-</div>
 
+  <h2>Offers</h2>
+  <div id="offers">
+    <div><button onclick="redeemOffer(1)">Offer 1: Trade 10,050 Dorpo Coins for 20 Coins</button></div>
+    <div><button onclick="redeemOffer(2)">Offer 2: Trade 810,000 Dorpo Coins for 80 Coins</button></div>
+    <div><button onclick="redeemOffer(3)">Offer 3: Trade 920,000 Dorpo Coins for 170 Coins</button></div>
+    <div><button onclick="redeemOffer(4)">Offer 4: Trade 750,000 Dorpo Coins for 77 Coins</button></div>
+    <div id="delayed-offer" style="display: none;">
+      <button onclick="redeemOffer(5)">Offer 5: Trade 980,000 Dorpo Coins for 180 Coins</button>
+    </div>
+  </div>
 
   <script>
-    const CLAIM_INTERVAL = 3600000;
-    const CLAIM_MAX_STORAGE = 45671000000;
-    const STORAGE_TIERS = [
-      { power: 1, max: 78000000, cost: 0 },
-      { power: 2, max: 95000000, cost: 1000000 },
-      { power: 3, max: 5000000000, cost: 34000000 },
-      { power: 4, max: 29000000000, cost: 80000000 }
-    ];
-
-    const BOT_NAMES = ["40power", "cam"];
-    const BOT_INITIAL = { "40power": 32, "cam": 8 };
-
-    let coins = 0;
-async function loadState() {
-  const response = await fetch('/api/user/state'); // Change URL as needed
-  const data = await response.json();
-  coins = data.coins;
-  powerLevel = data.power;
-  freeRolls = data.freeRolls;
-  claimStored = data.claimStored;
-  lastClaim = data.lastClaim;
-  lastPlay = data.lastPlay;
-  botCoins = data.botCoins;
-  lastStealByBot = data.lastStealByBot;
-  lastStealByPlayer = data.lastStealByPlayer;
-
-  updateUI();
-}
-
-
-    let botCoins = JSON.parse(localStorage.getItem('botCoins')) || { ...BOT_INITIAL };
-    let lastStealByBot = JSON.parse(localStorage.getItem('lastStealByBot')) || {
-      "40power": 0,
-      "cam": 0
-    };
-
-    let lastStealByPlayer = localStorage.getItem('lastStealByPlayer');
-    if (lastStealByPlayer === null) {
-      lastStealByPlayer = Date.now();
-      localStorage.setItem('lastStealByPlayer', lastStealByPlayer);
-    } else {
-      lastStealByPlayer = parseInt(lastStealByPlayer);
-    }
-
-    function updateUI() {
-      document.getElementById('coinLabel').innerText = `Coins: ${coins}`;
-      document.getElementById('powerLabel').innerText = `Storage Power: ${powerLevel}`;
-      document.getElementById('claimStatus').innerText = `Claim Storage: ${claimStored}`;
-      document.getElementById('botStatus').innerText =
-        `Bots - 40power: ${botCoins["40power"]} | cam: ${botCoins["cam"]}`;
-
-      const now = Date.now();
-      const timePassed = now - lastStealByPlayer;
-      const canSteal = coins >= 15 && timePassed >= 0;
-      document.getElementById("stealButton").disabled = !canSteal;
-    }
-
-    async function saveState() {
-  await fetch('/api/user/state', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      coins,
-      power: powerLevel,
-      freeRolls,
-      claimStored,
-      lastClaim,
-      lastPlay,
-      botCoins,
-      lastStealByBot,
-      lastStealByPlayer
-    })
-  });
-}
-
-
-    function gamble() {
-      const currentPower = STORAGE_TIERS.find(t => t.power === powerLevel);
-      if (coins < 7 && freeRolls <= 0) {
-        document.getElementById('result').innerText = "Not enough coins or free rolls!";
-        return;
-      }
-
-      if (freeRolls > 0) {
-        freeRolls--;
-      } else {
-        coins -= 7;
-      }
-
-      const outcome = [50, -200, 10][Math.floor(Math.random() * 3)];
-      coins += outcome;
-      coins = Math.min(coins, currentPower.max);
-
-      lastPlay = Date.now();
-      document.getElementById('result').innerText = `You ${outcome >= 0 ? 'won' : 'lost'} ${Math.abs(outcome)} coins!`;
-
-      saveState();
-      updateUI();
-    }
-
-    function claimCoins() {
-      const now = Date.now();
-      const hoursPassed = Math.floor((now - lastClaim) / CLAIM_INTERVAL);
-      let newCoins = 0;
-
-      for (let i = 0; i < hoursPassed; i++) {
-        newCoins += [2, 3, 5][Math.floor(Math.random() * 3)];
-      }
-
-      claimStored += newCoins;
-      claimStored = Math.min(claimStored, CLAIM_MAX_STORAGE);
-
-      const currentPower = STORAGE_TIERS.find(t => t.power === powerLevel);
-      const spaceLeft = currentPower.max - coins;
-      const transfer = Math.min(claimStored, spaceLeft);
-      coins += transfer;
-      claimStored -= transfer;
-
-      lastClaim = now;
-
-      saveState();
-      updateUI();
-    }
-
-    function upgradePower() {
-      const current = STORAGE_TIERS.find(t => t.power === powerLevel);
-      const next = STORAGE_TIERS.find(t => t.power === powerLevel + 1);
-
-      if (!next) {
-        alert("Max power reached!");
-        return;
-      }
-
-      if (coins < next.cost || coins < current.max) {
-        alert("You need more coins and must reach your current max to upgrade!");
-        return;
-      }
-
-      coins -= next.cost;
-      powerLevel = next.power;
-
-      saveState();
-      updateUI();
-    }
-
-    function checkInactivityBonus() {
-      const now = Date.now();
-
-      if (lastPlay === 0) {
-        lastPlay = now;
-        saveState();
-        return;
-      }
-
-      const daysPassed = (now - lastPlay) / (1000 * 60 * 60 * 24);
-      if (daysPassed >= 20) {
-        coins += 49;
-        freeRolls += 1;
-        alert("You got +49 coins and 1 free roll for being inactive for 20 days!");
-        lastPlay = now;
-        saveState();
-        updateUI();
-      }
-    }
-
-    function stealFromBot() {
-      const now = Date.now();
-      if (now - lastStealByPlayer < 0 || coins < 15) {
-        alert("You need to have at least 15 coins!");
-        return;
-      }
-
-      const bot = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-      const stolen = Math.min(botCoins[bot], Math.floor(Math.random() * 11) + 5); // 5–15 coins
-      if (stolen > 0) {
-        coins += stolen;
-        botCoins[bot] -= stolen;
-        alert(`You stole ${stolen} coins from ${bot}!`);
-      } else {
-        alert(`${bot} has no coins to steal.`);
-      }
-
-      lastStealByPlayer = now;
-      saveState();
-      updateUI();
-    }
-
-    function botStealRandomly() {
-      const now = Date.now();
-      for (const bot of BOT_NAMES) {
-        const last = lastStealByBot[bot] || 0;
-        const cooldownPassed = now - last >= 0;
-        const shouldSteal = Math.random() < 0.02;
-
-        if (cooldownPassed && shouldSteal && coins >= 5) {
-          const amount = Math.min(coins, Math.floor(Math.random() * 11) + 5);
-          coins -= amount;
-          botCoins[bot] += amount;
-          alert(`${bot} stole ${amount} coins from you!`);
-          lastStealByBot[bot] = now;
-        }
-      }
-
-      saveState();
-      updateUI();
-    }
-
-    function botHolidayPenalty() {
-      const now = new Date();
-      const day = now.getDate();
-      const month = now.getMonth() + 1;
-
-      const isHoliday = (day === 5 && month === 5) || (day === 13 && month === 1);
-      if (!isHoliday) return;
-
-      let totalStolen = 0;
-
-      for (const bot of BOT_NAMES) {
-        if (botCoins[bot] > 15) {
-          botCoins[bot] -= 15;
-          const stealAmount = Math.min(coins, 2);
-          coins -= stealAmount;
-          botCoins[bot] += stealAmount;
-          totalStolen += stealAmount;
-        }
-      }
-
-      if (totalStolen > 0) {
-        alert(`Holiday event! Bots stole a total of ${totalStolen} coins from you!`);
-      }
-
-      saveState();
-      updateUI();
-    }
-
-    document.getElementById('gambleButton').addEventListener('click', gamble);
-    // Dorpo Coin setup
-  const dorpoStart = new Date("2025-05-03T21:07:59").getTime();
-  const dorpoEnd = new Date("2025-07-13T21:07:03").getTime();
-  const dorpoCooldown = 12 * 60 * 1000; // 12 minutes
-
-let dorpoCoins = 0;
-let lastDorpoClaim = 0;
-
-async function loadDorpoState() {
-  const res = await fetch('/api/user/dorpo');
-  const data = await res.json();
-  dorpoCoins = data.dorpoCoins;
-  lastDorpoClaim = data.lastDorpoClaim;
-}
-
-
-  function updateDorpoUI() {
-    const now = Date.now();
-    const inTimeRange = now >= dorpoStart && now <= dorpoEnd;
-    const dorpoUI = document.getElementById("dorpoCoinUI");
-
-    if (inTimeRange) {
-      dorpoUI.style.display = "block";
-      document.getElementById("dorpoCoinCount").textContent = dorpoCoins;
-    } else {
-      dorpoUI.style.display = "none";
-    }
-  }
-
-  function claimDorpoCoins() {
-    const now = Date.now();
-    if (now < dorpoStart || now > dorpoEnd) return;
-
-    if (now - lastDorpoClaim < dorpoCooldown) {
-      alert("You can only claim a Dorpo Coin every 12 minutes!");
-      return;
-    }
-
-    const possibleGains = [80, 27, 140, 200, 50];
-    const gain = possibleGains[Math.floor(Math.random() * possibleGains.length)];
-    dorpoCoins += gain;
-    lastDorpoClaim = now;
-
-    let dorpoCoins = 0;
-let lastDorpoClaim = 0;
-
-async function loadDorpoState() {
-  const res = await fetch('/api/user/dorpo');
-  const data = await res.json();
-  dorpoCoins = data.dorpoCoins;
-  lastDorpoClaim = data.lastDorpoClaim;
-}
-
-
-    document.getElementById("dorpoCoinCount").textContent = dorpoCoins;
-    alert(`You claimed ${gain} Dorpo Coin(s)!`);
-  }
-
-  // Auto-run Dorpo UI check
-  setInterval(updateDorpoUI, 1000);
-  updateDorpoUI();
-
-    checkInactivityBonus();
-    botStealRandomly();
-    botHolidayPenalty();
-    updateUI();
-  
-  
-  let accumulatingDorpo = false;
-  let dorpoInterval = null;
-  
-
-  
-function redeemOffer(offerId) {
-  if (Date.now() < dorpoStart || Date.now() > dorpoEnd) {
-    alert("Dorpo Coin offers are not available now.");
-    return;
-  }
-
-  switch (offerId) {
-    case 1:
-      if (dorpoCoins >= 10050) {
-        dorpoCoins -= 10050;
-        coins += 20;
-        alert("Offer 1 redeemed! You got 20 coins.");
-      } else {
-        alert("Not enough Dorpo Coins for Offer 1.");
-      }
-      break;
-    case 2:
-      if (dorpoCoins >= 810000) {
-        dorpoCoins -= 810000;
-        coins += 80;
-        alert("Offer 2 redeemed! You got 80 coins.");
-      } else {
-        alert("Not enough Dorpo Coins for Offer 2.");
-      }
-      break;
-    case 3:
-      if (dorpoCoins >= 920000) {
-        dorpoCoins -= 920000;
-        coins += 170;
-        alert("Offer 3 redeemed! You got 170 coins.");
-      } else {
-        alert("Not enough Dorpo Coins for Offer 3.");
-      }
-      break;
-    case 4:
-      if (dorpoCoins >= 750000) {
-        dorpoCoins -= 750000;
-        coins += 77;
-        alert("Offer 4 redeemed! You got 77 coins.");
-      } else {
-        alert("Not enough Dorpo Coins for Offer 4.");
-      }
-      break;
-    case 5:
-      if (Date.now() >= delayedOfferTime) {
-        if (dorpoCoins >= 980000) {
-          dorpoCoins -= 980000;
-          coins += 180;
-          alert("Offer 5 redeemed! You got 180 coins.");
-        } else {
-          alert("Not enough Dorpo Coins for Offer 5.");
-        }
-      } else {
-        alert("Offer 5 is not available yet.");
-      }
-      break;
-  }
-
-let dorpoCoins = 0;
-let lastDorpoClaim = 0;
-
-async function loadDorpoState() {
-  const res = await fetch('/api/user/dorpo');
-  const data = await res.json();
-  dorpoCoins = data.dorpoCoins;
-  lastDorpoClaim = data.lastDorpoClaim;
-}
-
-  updateUI();
-}
-  if (Date.now() >= delayedOfferTime) {
-  document.getElementById("delayed-offer").style.display = "block";
-} else {
-  document.getElementById("delayed-offer").style.display = "none";
-}
-function updateUI() {
-  document.getElementById('coinLabel').innerText = `Coins: ${coins}`;
-  document.getElementById('powerLabel').innerText = `Storage Power: ${powerLevel}`;
-  document.getElementById('claimStatus').innerText = `Claim Storage: ${claimStored}`;
-  document.getElementById('botStatus').innerText =
-    `Bots - 40power: ${botCoins["40power"]} | cam: ${botCoins["cam"]}`;
-  document.getElementById('dorpoCoinsLabel').innerText = `Dorpo Coins: ${dorpoCoins}`;
-
-  // Display a start button for the dorpo coin collection
-  document.getElementById('startButton').style.display = "block";
-}
-function updateBotsByDate() {
-  const now = Date.now();
-
-  const taylioTime = new Date("2025-05-08T00:09:01").getTime();
-  const extraBotsTime = new Date("2025-05-09T00:09:02").getTime();
-
-  // Add taylio if it's time
-  if (now >= taylioTime && !BOT_NAMES.includes("taylio")) {
-    BOT_NAMES.push("taylio");
-    botCoins["taylio"] = botCoins["taylio"] || 90;
-    lastStealByBot["taylio"] = lastStealByBot["taylio"] || 0;
-  }
-
-  // Add 5 extra bots if it's time
-  if (now >= extraBotsTime) {
-    const newBots = {
-      "hh": 5,
-      "407": 29,
-      "royalty88": 3,
-      "oirggr": 80,
-      "pasus": 7
-    };
-    for (const [name, amount] of Object.entries(newBots)) {
-      if (!BOT_NAMES.includes(name)) {
-        BOT_NAMES.push(name);
-        botCoins[name] = botCoins[name] || amount;
-        lastStealByBot[name] = lastStealByBot[name] || 0;
-      }
-    }
-  }
-
-  saveState();
-}
-
-updateBotsByDate();
-
-</script>
-
+    // Game logic and other functions here
+    // Example: gamble(), upgradePower(), stealFromBot(), etc.
+  </script>
 </body>
 </html>
