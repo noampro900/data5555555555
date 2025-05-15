@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bom Clicker Game</title>
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      margin-top: 100px;
+    }
+    button {
+      padding: 20px;
+      font-size: 24px;
+    }
+    .points {
+      font-size: 32px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bom Clicker Game</h1>
+  <button onclick="clickButton()">Click Me!</button>
+  <div class="points">
+    Bom Points: <span id="bom">0</span><br>
+    Gok Coins: <span id="gok">0</span>
+  </div>
+
+  <script>
+    // Connect directly to the server IP and port
+    const socket = io("http://10.100.102.11:5000");
+
+    function clickButton() {
+      socket.emit('click');
+    }
+
+    socket.on('update', (data) => {
+      document.getElementById('bom').textContent = data.bom;
+      document.getElementById('gok').textContent = data.gok;
+    });
+  </script>
+</body>
+</html>
