@@ -111,13 +111,16 @@
     <h2 id="blueTitle" style="display:none;">All Blue</h2>
     <div id="allBlue"></div>
   </div>
+  
+  <div id="popup" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:60%; background:black; z-index:999;">
+  <div id="popupClose" onclick="closePopup()" style="position:absolute; top:5px; right:10px; color:white; cursor:pointer;">X</div>
+  <video id="popupVideo" autoplay controls style="width:100%; height:100%;"></video>
+</div>
 
-  <div id="popup">
-    <div id="popupClose" onclick="closePopup()">×</div>
-    <video id="popupVideo" autoplay controls></video>
-  </div>
+<script>
 
-  <script>
+ 
+
     let mode = null;
     let data = JSON.parse(localStorage.getItem('stuffData')) || {
       items: [
@@ -252,21 +255,25 @@
     }
     setInterval(checkTimeouts, 60000);
 
-    function showPopup() {
-      const popup = document.getElementById('popup');
-      const popupVideo = document.getElementById('popupVideo');
-      popupVideo.src = data.popupVideo;
-      popup.style.display = 'block';
-      popupVideo.play().catch(() => {});
-    }
+  function showPopup() {
+    const popup = document.getElementById('popup');
+    const video = document.getElementById('popupVideo');
+    video.src = 'https://api-f.streamable.com/api/v1/videos/kormg0/mp4'; // or use your actual source
+    popup.style.display = 'block';
 
-    function closePopup() {
-      const popup = document.getElementById('popup');
-      const popupVideo = document.getElementById('popupVideo');
-      popupVideo.pause();
-      popupVideo.src = '';
-      popup.style.display = 'none';
+    // Automatically close after 7.5 seconds
+    setTimeout(closePopup, 7500);
+  }
+
+  function closePopup() {
+    const popup = document.getElementById('popup');
+    const video = document.getElementById('popupVideo');
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
     }
+    popup.style.display = 'none';
+  }
 
     // Media control and autoplay workaround
 
@@ -278,6 +285,7 @@
     const videoIntro = document.getElementById('videoIntro');
     const mainApp = document.getElementById('mainApp');
     document.getElementById('introAudio').play();
+    
 
     function startMedia() {
       if (started) return;
@@ -325,6 +333,10 @@
 
       renderStuff();
     };
+    
+    
+    
+    
   </script>
 </body>
 </html>
