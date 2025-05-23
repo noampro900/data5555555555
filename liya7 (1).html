@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stuff Board</title>
+  <style>
+    #skipBtn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.8);
+      color: black;
+      padding: 10px;
+      cursor: pointer;
+      display: none;  /* initially hidden */
+      z-index: 2;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      overflow: hidden;
+    }
+    #introVid {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #stuffList {
+      padding: 20px;
+      list-style: none;
+    }
+    .stuffItem {
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border: 3px solid transparent;
+    }
+    .yellow { border-color: yellow; }
+    .purple { border-color: purple; }
+    .blue { border-color: cyan; }
+    .points { margin-top: 5px; }
+    .specialBtns {
+      margin: 15px;
+    }
+    .specialBtns button {
+      margin-right: 10px;
+    }
+    #allBlue {
+      margin: 20px;
+    }
+    .blueBtn {
+      margin: 5px;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+    }
+    #popup {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 60%;
+      background: black;
+      z-index: 999;
+    }
+    #popup video {
+      width: 100%;
+      height: 100%;
+    }
+    #popupClose {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="videoIntro" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: black;">
+  <video id="introVid" width="640" height="360" playsinline autoplay controls>
+    <source src="https://api-f.streamable.com/api/v1/videos/q6ha0q/mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <button id="skipBtn" style="position: absolute; bottom: 20px; right: 20px;">Skip</button>
+</div>
+
+  <audio id="introAudio" loop src="https://pouch.jumpshare.com/preview/bH-9zCX7S7jepmCzcwYkzBM063ygbvFhOCc9fbNA6P-krAr_neLyZI8o2J6THOn6DlOtf7vKLkr4m6ADz5G1QKfe6u5S6__EjyIXTbSlP7STeGTZp_sLGnck8fZ44cRUGbZhy6kPh8ct4oRubBdmTW6yjbN-I2pg_cnoHs_AmgI.mp3"></audio>
+
+  <div id="mainApp" style="display:none;">
+    <div class="specialBtns">
+      <button onclick="setMode('yellow')">Sleep with Liya</button>
+      <button onclick="setMode('purple')">The Welcomed Today</button>
+    </div>
+    <ul id="stuffList"></ul>
+    <h2 id="blueTitle" style="display:none;">All Blue</h2>
+    <div id="allBlue"></div>
+  </div>
+
+  <div id="popup">
+    <div id="popupClose" onclick="closePopup()">×</div>
+    <video id="popupVideo" autoplay controls></video>
+  </div>
+
+  <script>
+    let mode = null;
+    let data = JSON.parse(localStorage.getItem('stuffData')) || {
+      items: [
+        {
+          id: 0,
+          content: 'צביצב',
+          points: 0,
+          special: null,
+          timestamp: null
+        }
+      ],
+      introVideo: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      popupVideo: 'https://api-f.streamable.com/api/v1/videos/kormg0/mp4',
+      blueItems: []
+    };
+
+    // Clear blueItems on first load to prevent buttons showing immediately
+    if (!localStorage.getItem('stuffData')) {
+      data.blueItems = [];
+      saveData();
+    }
+
+    function saveData() {
+      localStorage.setItem('stuffData', JSON.stringify(data));
+    }
+
+    function renderStuff() {
+      const list = document.getElementById('stuffList');
+      list.innerHTML = '';
+      data.items.forEach((item, i) => {
+        const li = document.createElement('li');
+        li.className = `stuffItem ${item.special || ''}`;
+        li.onclick = () => handleClick(i);
+        li.innerHTML = `
+          <div>${item.content}</div>
+          <div class="points">
+            <button onclick="changePoints(event, ${i}, 1)">+</button>
+            ${item.points}
+            <button onclick="changePoints(event, ${i}, -1)">-</button>
+          </div>`;
+        list.appendChild(li);
+      });
+      renderBlue();
+    }
+
+    function renderBlue() {
+      const container = document.getElementById('allBlue');
+      const blueTitle = document.getElementById('blueTitle');
+      container.innerHTML = '';
+
+      if (!data.blueItems || data.blueItems.length === 0) {
+        container.style.display = 'none';
+        blueTitle.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      blueTitle.style.display = 'block';
+
+      data.blueItems.forEach(id => {
+        const item = data.items[id];
+        if (!item) return; // safety check
+
+        const btn = document.createElement('button');
+        btn.className = 'blueBtn';
+        btn.innerText = item.content;
+        btn.onclick = () => showPopup();
+        container.appendChild(btn);
+      });
+    }
+
+    function changePoints(e, i, delta) {
+      e.stopPropagation();
+      data.items[i].points += delta;
+      if (data.items[i].points < 0) data.items[i].points = 0; // no negative points
+      saveData();
+      renderStuff();
+    }
+
+    function handleClick(i) {
+      if (!mode) return;
+      const now = Date.now();
+      const item = data.items[i];
+      if (mode === 'yellow' || mode === 'purple') {
+        data.items.forEach(it => {
+          if (it.special === mode) it.special = null;
+        });
+        if (item.special === (mode === 'yellow' ? 'purple' : 'yellow')) {
+          item.special = 'blue';
+          if (!data.blueItems.includes(i)) data.blueItems.push(i);
+        } else {
+          // Remove from blueItems if switching to yellow or purple
+          if (item.special === 'blue') {
+            data.blueItems = data.blueItems.filter(id => id !== i);
+          }
+          item.special = mode;
+        }
+        item.timestamp = now;
+        saveData();
+        renderStuff();
+      }
+    }
+
+    function setMode(m) {
+      mode = m;
+    }
+
+    function checkTimeouts() {
+      const now = Date.now();
+      let changed = false;
+
+      data.items.forEach((item, i) => {
+        if (!item.special || !item.timestamp) return;
+        const elapsedHours = (now - item.timestamp) / (1000 * 60 * 60);
+        if (item.special === 'yellow' && elapsedHours > 24) {
+          item.special = null;
+          changed = true;
+        } else if (item.special === 'purple' && elapsedHours > 48) {
+          item.special = null;
+          changed = true;
+        } else if (item.special === 'blue' && elapsedHours > 73) {
+          item.special = null;
+          data.blueItems = data.blueItems.filter(id => id !== i);
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        saveData();
+        renderStuff();
+      }
+    }
+    setInterval(checkTimeouts, 60000);
+
+    function showPopup() {
+      const popup = document.getElementById('popup');
+      const popupVideo = document.getElementById('popupVideo');
+      popupVideo.src = data.popupVideo;
+      popup.style.display = 'block';
+      popupVideo.play().catch(() => {});
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('popup');
+      const popupVideo = document.getElementById('popupVideo');
+      popupVideo.pause();
+      popupVideo.src = '';
+      popup.style.display = 'none';
+    }
+
+    // Media control and autoplay workaround
+
+    let started = false;
+
+    const vid = document.getElementById('introVid');
+    const audio = document.getElementById('introAudio');
+    const skipBtn = document.getElementById('skipBtn');
+    const videoIntro = document.getElementById('videoIntro');
+    const mainApp = document.getElementById('mainApp');
+    document.getElementById('introAudio').play();
+
+    function startMedia() {
+      if (started) return;
+      started = true;
+
+      vid.muted = false;
+      vid.play().catch(() => console.log('Video play failed'));
+      audio.muted = false
+      audio.play().catch(() => console.log('Audio play failed'));
+    }
+
+    window.onload = () => {
+      vid.play().catch(() => {});
+      setTimeout(() => {
+        skipBtn.style.display = 'block';
+      }, 7000);
+    };
+
+    function startMedia() {
+  if (started) return;
+  started = true;
+  
+  audio.muted = false;
+  audio.play().catch(() => {});
+
+  if (vid.paused) {
+    vid.muted = false;
+    vid.play().catch(() => console.log('Video play failed'));
+  }
+
+  if (audio.paused) {
+    audio.play().catch(() => console.log('Audio play failed'));
+  }
+}
+    
+    skipBtn.onclick = () => {
+      vid.pause();
+      vid.currentTime = 0;
+      audio.pause();
+      audio.currentTime = 0;
+
+      videoIntro.style.display = 'none';
+      mainApp.style.display = 'block';
+      document.body.style.overflow = 'auto';
+
+      renderStuff();
+    };
+  </script>
+</body>
+</html>
