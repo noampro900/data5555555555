@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Game with Bots</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    .question { margin-bottom: 20px; }
+    .hidden { display: none; }
+    button { margin-top: 10px; }
+    .leaderboard { margin-top: 20px; background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Quiz Game with Bots</h1>
+  <div id="game"></div>
+  <script>
+    const bots = ["Garfield", "Jake", "Poj", "Noa Kirel"];
+    let playerScore = 0;
+    let currentQuestion = 0;const questions = [
+  {
+    text: "What is guilty?",
+    options: ["אשם", "חף מפשע", "לא עוזר"],
+    correct: 0,
+    botCorrect: [0, 1]
+  },
+  {
+    text: "What is fear?",
+    options: ["פחד", "אשם", "שלוש"],
+    correct: 0,
+    botCorrect: [0, 1]
+  },
+  {
+    text: "What is silent?",
+    options: ["שקט", "רעש", "פחד"],
+    correct: 0,
+    botCorrect: [0]
+  },
+  {
+    text: "What is innocent?",
+    options: ["חף מפשע", "גרוע"],
+    correct: 0,
+    botCorrect: [0, 3]
+  },
+  {
+    text: "What is to make someone do something difficult with no choice",
+    type: "text",
+    correct: (answer) => answer.toLowerCase().startsWith("Fo") && answer.toLowerCase().endsWith("e"),
+    botCorrect: [2, 1]
+  },
+  {
+    text: "What is innocent?",
+    options: [
+      "Someone who free from guilty",
+      "Someone who did something bad",
+      "Someone who is in the bathroom"
+    ],
+    correct: 0,
+    botCorrect: [0, 1, 2, 3]
+  },
+  {
+    text: "What is orphan?",
+    options: [
+      "Someone who doesn't have money",
+      "Someone who doesn't have a family",
+      "Someone who hasn't learned to walk yet"
+    ],
+    correct: 1,
+    botCorrect: [0, 1, 2, 3]
+  },
+  {
+    text: "What is silent?",
+    options: [
+      "No noise",
+      "No chairs",
+      "No spiders"
+    ],
+    correct: 0,
+    botCorrect: [0, 1, 3]
+  },
+  {
+    text: "What is memories?",
+    options: [
+      "remember something bad you did in the past",
+      "the process by which our minds store and recall past experiences and information",
+      "the process by which our minds store and recall future experiences and information"
+    ],
+    correct: 1,
+    botCorrect: [0, 1, 2, 3]
+  },
+  {
+    text: "What is guilty?",
+    options: [
+      "someone who is very very short",
+      "somone who did something good",
+      "somone who did something bad"
+    ],
+    correct: 2,
+    botCorrect: [0]
+  },
+  {
+    text: "What is explanation",
+    options: [
+      "מישהו שלא אוהב את אמא שלו",
+      "הסבר למשהו שקרה",
+      "הסבר או טענה למשהו שקרה"
+    ],
+    correct: 1,
+    botCorrect: [0, 1, 2, 3]
+  },
+  {
+    text: "What is producer?",
+    options: [
+      "מפיק",
+      "חדשות",
+      "טריוויה"
+    ],
+    correct: 0,
+    botCorrect: [0, 1, 2, 3]
+  }
+];
+
+const botScores = [0, 0, 0, 0];
+
+const gameDiv = document.getElementById("game");
+
+function showQuestion() {
+  if (currentQuestion >= questions.length) return endGame();
+  const q = questions[currentQuestion];
+  gameDiv.innerHTML = `<div class="question"><h2>Question ${currentQuestion + 1}: ${q.text}</h2></div>`;
+
+  if (q.type === "text") {
+    const input = document.createElement("input");
+    input.type = "text";
+    gameDiv.appendChild(input);
+    const button = document.createElement("button");
+    button.textContent = "Submit";
+    button.onclick = () => {
+      const correct = q.correct(input.value);
+      updateScores(correct);
+    };
+    gameDiv.appendChild(button);
+  } else {
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.onclick = () => updateScores(idx === q.correct);
+      gameDiv.appendChild(btn);
+      gameDiv.appendChild(document.createElement("br"));
+    });
+  }
+  showLeaderboard();
+}
+
+function updateScores(playerCorrect) {
+  const q = questions[currentQuestion];
+
+  playerScore += playerCorrect ? 200 : -170;
+
+  q.botCorrect.forEach(i => botScores[i] += 200);
+  bots.forEach((_, i) => {
+    if (!q.botCorrect.includes(i)) botScores[i] -= 170;
+  });
+
+  currentQuestion++;
+
+  // הראה את טבלת הניקוד שוב
+  gameDiv.innerHTML = "<p>Waiting for next question...</p>";
+  showLeaderboard();
+
+  setTimeout(() => {
+    showQuestion();
+  }, 6000);
+}
+
+function showLeaderboard() {
+  const scores = [...botScores, playerScore];
+  const names = [...bots, "You"];
+
+  const ranking = scores.map((score, i) => ({ name: names[i], score }))
+                        .sort((a, b) => b.score - a.score);
+
+  const board = document.createElement("div");
+  board.className = "leaderboard";
+  board.innerHTML = `<h3>Leaderboard</h3><ol>${ranking.map(r => `<li>${r.name}: ${r.score}</li>`).join("")}</ol>`;
+  gameDiv.appendChild(board);
+}
+
+function endGame() {
+  const scores = [...botScores, playerScore];
+  const names = [...bots, "You"];
+
+  const ranking = scores.map((score, i) => ({ name: names[i], score }))
+                        .sort((a, b) => b.score - a.score);
+
+  const yourPlace = ranking.findIndex(r => r.name === "You") + 1;
+  const result = yourPlace <= 2 ? "You win! 🏆" : "You didn't win 😢";
+
+  gameDiv.innerHTML = `<h2>Game Over</h2><p>${result}</p><ol>${ranking.map(r => `<li>${r.name}: ${r.score}</li>`).join("")}</ol>`;
+}
+
+showQuestion();
+
+  </script>
+</body>
+</html>
