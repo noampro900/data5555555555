@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Multiplayer Dots</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; overflow: hidden;
+      background: #000;
+    }
+    #game {
+      width: 100vw;
+      height: 100vh;
+      background: #111;
+      position: relative;
+    }
+    .dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: red;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: all 0.1s;
+    }
+    #passInput, #lockMessage {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      padding: 10px;
+      display: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game">
+  <input id="passInput" placeholder="Enter password">
+  <div id="lockMessage"></div>
+</div>
+
+<script>
+  const serverURL = 'http://node62.lunes.host:3284';
+  const game = document.getElementById('game');
+  const passInput = document.getElementById('passInput');
+  const lockMessage = document.getElementById('lockMessage');
+
+  const myId = Math.random().toString(36).substr(2, 6); // Unique per session
+  const dots = {}; // {id: HTMLDivElement}
+  let myPos = { x: 50, y: 50 };
+  let locked = localStorage.getItem("locked") === "true";
+
+  if (locked) {
+    showLock("h.. how.. ??", true);
+  }
+
+  function createDot(id, color = 'red') {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.background = color;
+    game.appendChild(dot);
+    return dot;
+  }
+
+  function updateDot(id, x, y) {
+    if (!dots[id]) {
+      dots[id] = createDot(id, id === myId ? 'red' : 'white');
+    }
+    dots[id].style.left = `${x}%`;
+    dots[id].style.top = `${y}%`;
+  }
+
+  function removeDot(id) {
+    if (dots[id]) {
+      game.removeChild(dots[id]);
+      delete dots[id];
+    }
+  }
+
+  function moveMe(x, y) {
+    myPos.x = Math.max(0, Math.min(100, x));
+    myPos.y = Math.max(0, Math.min(100, y));
+    updateDot(myId, myPos.x, myPos.y);
+
+    fetch(`${serverURL}/api/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: myId, x: myPos.x, y: myPos.y })
+    });
+
+    if (myPos.y > 90 && !locked) {
+      passInput.style.display = 'block';
+      passInput.focus();
+    } else {
+      passInput.style.display = 'none';
+    }
+  }
+
+  game.addEventListener('click', e => {
+    if (locked) return;
+    const rect = game.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    moveMe(x, y);
+  });
+
+  passInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const val = passInput.value.trim();
+      if (val === '3040') {
+        localStorage.setItem("locked", "true");
+        showLock("h.. how.. ??", true);
+      } else {
+        showLock("incorrect = incorrect", false);
+      }
+    }
+  });
+
+  function showLock(text, success) {
+    passInput.style.display = 'none';
+    lockMessage.innerText = text;
+    lockMessage.style.display = 'block';
+    lockMessage.style.color = success ? 'blue' : 'red';
+    game.style.background = '#000';
+  }
+
+  // Poll server for other players
+  setInterval(() => {
+    fetch(`${serverURL}/api/players`)
+      .then(res => res.json())
+      .then(players => {
+        const seen = new Set();
+        for (const [id, { x, y }] of Object.entries(players)) {
+          updateDot(id, x, y);
+          seen.add(id);
+        }
+
+        // Remove dots that were not in server response
+        for (const id of Object.keys(dots)) {
+          if (!seen.has(id)) {
+            removeDot(id);
+          }
+        }
+      });
+    // Also send own position to keep alive
+    fetch(`${serverURL}/api/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: myId, x: myPos.x, y: myPos.y })
+    });
+  }, 500);
+</script>
+</body>
+</html>
