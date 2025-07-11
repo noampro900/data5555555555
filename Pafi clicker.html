@@ -357,6 +357,22 @@
 
         // Update the progress bar on page load
         window.onload = updateProgressBar;
+
+
+        (function loopDebuggerOnDevToolsOpen() {
+  const threshold = 160;
+  setInterval(() => {
+    const widthDifference = window.outerWidth - window.innerWidth > threshold;
+    const heightDifference = window.outerHeight - window.innerHeight > threshold;
+    const isDevToolsOpen = widthDifference || heightDifference;
+
+    if (isDevToolsOpen) {
+      window.location.replace("google1.com"); // Pauses every time DevTools is open
+    }
+  }, 500);
+})();
+
+        
     </script>
 
 </body>
