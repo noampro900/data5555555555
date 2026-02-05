@@ -87,7 +87,7 @@ button {
 <h1>NFC HOLE GAME</h1>
 
 <div id="box">
-    <p>Scan 2 NFC cards with >2 MOL coins</p>
+    <p>Scan 1 NFC card with >2 MOL coins</p>
     <button onclick="scanNFC()">Scan NFC</button>
     <div id="status">Waiting…</div>
 </div>
@@ -101,10 +101,9 @@ button {
 
 <script>
 // --- CONFIG ---
-const cardsURL = "https://noampro900.github.io/data5555555555/ssw.html";
+const cardsURL = "https://noampro900.github.io/data5555555555/cards.txt";
 const HOLE_VALUES = [5, 10, 11, 20, 49, 700];
 let allowedCards = [];
-let scannedCards = [];
 let gameActive = false;
 let ballsLeft = 3;
 let tickets = 0;
@@ -152,13 +151,8 @@ async function scanNFC() {
                 return;
             }
 
-            if (!scannedCards.includes(serial)) {
-                scannedCards.push(serial);
-            }
-
-            setStatus(`✅ Card accepted (${scannedCards.length}/2)`, "ok");
-
-            if (scannedCards.length >=2) startGame();
+            setStatus(`✅ Card accepted! MOL: ${mol}`, "ok");
+            startGame();
         };
 
     } catch (e) {
