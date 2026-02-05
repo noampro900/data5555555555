@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NFC Game Access</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: radial-gradient(circle at top, #111, #000);
+        color: white;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 30px;
+        letter-spacing: 2px;
+    }
+
+    #cardBox {
+        margin: 30px auto;
+        width: 90%;
+        max-width: 400px;
+        padding: 20px;
+        border-radius: 16px;
+        background: #111;
+        box-shadow: 0 0 20px #0ff;
+    }
+
+    button {
+        background: #0ff;
+        color: black;
+        border: none;
+        padding: 14px 22px;
+        font-size: 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+
+    #status {
+        margin-top: 20px;
+        font-size: 18px;
+    }
+
+    #game {
+        display: none;
+        margin-top: 30px;
+        font-size: 22px;
+        color: #0f0;
+    }
+
+    .error {
+        color: #f33;
+    }
+
+    .ok {
+        color: #0f0;
+    }
+</style>
+</head>
+<body>
+
+<h1>NFC GAME ACCESS</h1>
+
+<div id="cardBox">
+    <p>Tap your NFC card to start the game</p>
+    <button onclick="scanNFC()">Scan NFC Card</button>
+    <div id="status">Waiting for scan…</div>
+</div>
+
+<div id="game">
+    🎮 Game Unlocked<br>
+    You can start playing now!
+</div>
+
+<script>
+let allowedCards = [];
+
+// Load cards.txt
+fetch("/storage/emulated/0/cards.txt")
+    .then(res => res.text())
+    .then(text => {
+        allowedCards = text
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+    });
+
+async function scanNFC() {
+    if (!("NDEFReader" in window)) {
+        document.getElementById("status").innerHTML =
+            "<span class='error'>NFC not supported on this device</span>";
+        return;
+    }
+
+    try {
+        const reader = new NDEFReader();
+        await reader.scan();
+
+        document.getElementById("status").innerText =
+            "Hold NFC card near phone…";
+
+        reader.onreading = event => {
+            const serial = event.serialNumber;
+
+            if (allowedCards.includes(serial)) {
+                document.getElementById("status").innerHTML =
+                    "<span class='ok'>✅ Card accepted</span>";
+                unlockGame();
+            } else {
+                document.getElementById("status").innerHTML =
+                    "<span class='error'>❌ Card not recognized</span>";
+            }
+        };
+
+    } catch (err) {
+        document.getElementById("status").innerHTML =
+            "<span class='error'>Permission denied or scan failed</span>";
+    }
+}
+
+function unlockGame() {
+    document.getElementById("game").style.display = "block";
+}
+</script>
+
+</body>
+</html>
