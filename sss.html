@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFC Card Match</title>
+<title>NFC Card Match Online</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -73,15 +73,26 @@ button {
 <script>
 let cards = [];
 
-// Load cards.txt
-fetch("https://noampro900.github.io/data5555555555/cards.txt")
-    .then(r => r.text())
+// Replace this with your HTTPS URL
+const cardsURL = "https://noampro900.github.io/data5555555555/cards.txt";
+
+// Load cards.txt from HTTPS
+fetch(cardsURL)
+    .then(r => {
+        if (!r.ok) throw new Error("Failed to fetch cards.txt");
+        return r.text();
+    })
     .then(t => {
         cards = t
             .split("\n")
             .map(l => l.trim())
             .filter(l => l.length > 0);
         console.log("Loaded cards:", cards);
+    })
+    .catch(err => {
+        console.error(err);
+        document.getElementById("status").innerText =
+            "❌ Failed to load cards file";
     });
 
 async function scanNFC() {
@@ -99,7 +110,7 @@ async function scanNFC() {
             const scannedSerial = event.serialNumber.toUpperCase();
             console.log("Scanned:", scannedSerial);
 
-            // 🔥 CORRECT MATCH LOGIC
+            // 🔥 Correct match logic
             const matchLine = cards.find(line => {
                 const fileSerial = line.split("|")[0].toUpperCase();
                 return fileSerial === scannedSerial;
