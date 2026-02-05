@@ -88,7 +88,7 @@ button {
 
 <div id="box">
     <p>Scan 1 NFC card with >2 MOL coins</p>
-    <button onclick="scanNFC()">Scan NFC</button>
+    <button id="scanBtn" onclick="scanNFC()">Scan NFC</button>
     <div id="status">Waiting…</div>
 </div>
 
@@ -119,10 +119,15 @@ fetch(cardsURL)
 
 // --- NFC SCAN ---
 async function scanNFC() {
+    if (gameActive) return; // disable scanning during game
+
     if (!("NDEFReader" in window)) {
         setStatus("NFC not supported", "err");
         return;
     }
+
+    const scanBtn = document.getElementById("scanBtn");
+    scanBtn.disabled = true; // prevent double clicks
 
     try {
         const reader = new NDEFReader();
@@ -140,6 +145,7 @@ async function scanNFC() {
 
             if (!matchLine) {
                 setStatus("❌ Card not recognized", "err");
+                scanBtn.disabled = false;
                 return;
             }
 
@@ -148,6 +154,7 @@ async function scanNFC() {
 
             if (mol <= 2) {
                 setStatus("❌ Not enough MOL coins", "err");
+                scanBtn.disabled = false;
                 return;
             }
 
@@ -157,6 +164,7 @@ async function scanNFC() {
 
     } catch (e) {
         setStatus("❌ Permission denied or scan failed", "err");
+        scanBtn.disabled = false;
     }
 }
 
@@ -182,8 +190,8 @@ function startGame() {
 
 // --- HOLES ---
 function spawnHoles() {
-    setInterval(() => {
-        if (!gameActive) return;
+    const interval = setInterval(() => {
+        if (!gameActive) { clearInterval(interval); return; }
 
         const hole = document.createElement("div");
         hole.className = "hole";
@@ -198,11 +206,7 @@ function spawnHoles() {
         const move = setInterval(() => {
             x -= 2;
             hole.style.left = x + "px";
-
-            if (x < -80) {
-                hole.remove();
-                clearInterval(move);
-            }
+            if (x < -80) { hole.remove(); clearInterval(move); }
         }, 16);
     }, 1200);
 }
@@ -244,6 +248,11 @@ function shootBall(ball){
         if(y>350){
             ball.remove();
             clearInterval(shot);
+        }
+
+        // --- AUTO REFRESH after last ball ---
+        if (ballsLeft === 0 && document.querySelectorAll(".ball").length === 0){
+            setTimeout(()=>location.reload(), 1500);
         }
     },16);
 }
