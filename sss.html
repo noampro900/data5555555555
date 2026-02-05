@@ -2,133 +2,143 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFC Game Access</title>
-
+<title>NFC Card Match</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: radial-gradient(circle at top, #111, #000);
-        color: white;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #111, #000);
+    color: white;
+    text-align: center;
+}
 
-    h1 {
-        margin-top: 30px;
-        letter-spacing: 2px;
-    }
+h1 {
+    margin-top: 30px;
+}
 
-    #cardBox {
-        margin: 30px auto;
-        width: 90%;
-        max-width: 400px;
-        padding: 20px;
-        border-radius: 16px;
-        background: #111;
-        box-shadow: 0 0 20px #0ff;
-    }
+#box {
+    margin: 30px auto;
+    width: 90%;
+    max-width: 420px;
+    padding: 25px;
+    background: #111;
+    border-radius: 18px;
+    box-shadow: 0 0 20px #0ff;
+}
 
-    button {
-        background: #0ff;
-        color: black;
-        border: none;
-        padding: 14px 22px;
-        font-size: 18px;
-        border-radius: 10px;
-        cursor: pointer;
-        margin-top: 15px;
-    }
+button {
+    background: #0ff;
+    border: none;
+    padding: 14px 24px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+}
 
-    button:active {
-        transform: scale(0.97);
-    }
+#status {
+    margin-top: 20px;
+    font-size: 18px;
+}
 
-    #status {
-        margin-top: 20px;
-        font-size: 18px;
-    }
+.ok { color: #0f0; }
+.err { color: #f33; }
 
-    #game {
-        display: none;
-        margin-top: 30px;
-        font-size: 22px;
-        color: #0f0;
-    }
-
-    .error {
-        color: #f33;
-    }
-
-    .ok {
-        color: #0f0;
-    }
+#game {
+    display: none;
+    margin-top: 25px;
+    font-size: 22px;
+    color: #0f0;
+}
 </style>
 </head>
+
 <body>
 
-<h1>NFC GAME ACCESS</h1>
+<h1>NFC ACCESS SYSTEM</h1>
 
-<div id="cardBox">
-    <p>Tap your NFC card to start the game</p>
-    <button onclick="scanNFC()">Scan NFC Card</button>
-    <div id="status">Waiting for scan…</div>
+<div id="box">
+    <p>Tap NFC card to continue</p>
+    <button onclick="scanNFC()">Scan NFC</button>
+    <div id="status">Waiting…</div>
 </div>
 
 <div id="game">
-    🎮 Game Unlocked<br>
-    You can start playing now!
+    🎮 GAME UNLOCKED<br>
+    Enjoy!
 </div>
 
 <script>
-let allowedCards = [];
+let cards = [];
 
 // Load cards.txt
-fetch("https://noampro900.github.io/data5555555555/cards.txt")
-    .then(res => res.text())
-    .then(text => {
-        allowedCards = text
+fetch("cards.txt")
+    .then(r => r.text())
+    .then(t => {
+        cards = t
             .split("\n")
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+        console.log("Loaded cards:", cards);
     });
 
 async function scanNFC() {
     if (!("NDEFReader" in window)) {
-        document.getElementById("status").innerHTML =
-            "<span class='error'>NFC not supported on this device</span>";
+        setStatus("NFC not supported", "err");
         return;
     }
 
     try {
         const reader = new NDEFReader();
         await reader.scan();
+        setStatus("Hold card near phone…");
 
-        document.getElementById("status").innerText =
-            "Hold NFC card near phone…";
+        reader.onreading = (event) => {
+            const scannedSerial = event.serialNumber.toUpperCase();
+            console.log("Scanned:", scannedSerial);
 
-        reader.onreading = event => {
-            const serial = event.serialNumber;
+            // 🔥 CORRECT MATCH LOGIC
+            const matchLine = cards.find(line => {
+                const fileSerial = line.split("|")[0].toUpperCase();
+                return fileSerial === scannedSerial;
+            });
 
-            if (allowedCards.includes(serial)) {
-                document.getElementById("status").innerHTML =
-                    "<span class='ok'>✅ Card accepted</span>";
-                unlockGame();
-            } else {
-                document.getElementById("status").innerHTML =
-                    "<span class='error'>❌ Card not recognized</span>";
+            if (!matchLine) {
+                setStatus("❌ Card not recognized", "err");
+                return;
             }
+
+            const parts = matchLine.split("|");
+            const mol = Number(parts[1]);
+            const tickets = Number(parts[2]);
+
+            if (mol <= 2) {
+                setStatus("❌ Not enough MOL coins", "err");
+                return;
+            }
+
+            setStatus(
+                `✅ Card accepted<br>MOL: ${mol} | Tickets: ${tickets}`,
+                "ok"
+            );
+            unlockGame();
         };
 
-    } catch (err) {
-        document.getElementById("status").innerHTML =
-            "<span class='error'>Permission denied or scan failed</span>";
+    } catch (e) {
+        setStatus("❌ Permission denied or scan failed", "err");
     }
 }
 
 function unlockGame() {
     document.getElementById("game").style.display = "block";
+}
+
+function setStatus(text, cls) {
+    const el = document.getElementById("status");
+    el.innerHTML = text;
+    el.className = cls || "";
 }
 </script>
 
