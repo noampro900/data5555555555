@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFC Card Match Online</title>
+<title>NFC Hole Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,14 +14,12 @@ body {
     text-align: center;
 }
 
-h1 {
-    margin-top: 30px;
-}
+h1 { margin-top: 20px; }
 
 #box {
-    margin: 30px auto;
+    margin: 20px auto;
     width: 90%;
-    max-width: 420px;
+    max-width: 500px;
     padding: 25px;
     background: #111;
     border-radius: 18px;
@@ -35,6 +33,229 @@ button {
     font-size: 18px;
     border-radius: 10px;
     cursor: pointer;
+    margin-top: 10px;
+}
+
+#status { margin-top: 15px; font-size: 18px; }
+.ok { color: #0f0; }
+.err { color: #f33; }
+
+#gameArea {
+    display: none;
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin-top: 20px;
+    border-top: 2px solid #222;
+    border-bottom: 2px solid #222;
+    background: linear-gradient(#050505, #111);
+    overflow: hidden;
+}
+
+.hole {
+    position: absolute;
+    bottom: 40px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #000;
+    border: 3px solid #0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #0ff;
+    box-shadow: 0 0 15px #0ff;
+}
+
+.ball {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: orange;
+    position: absolute;
+    bottom: 0;
+    cursor: pointer;
+    box-shadow: 0 0 10px orange;
+}
+
+#info { margin-top: 10px; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<h1>NFC HOLE GAME</h1>
+
+<div id="box">
+    <p>Scan 2 NFC cards with >2 MOL coins</p>
+    <button onclick="scanNFC()">Scan NFC</button>
+    <div id="status">Waiting…</div>
+</div>
+
+<div id="gameArea"></div>
+
+<div id="info" style="display:none;">
+    Balls left: <span id="balls">3</span> |
+    Tickets: <span id="tickets">0</span>
+</div>
+
+<script>
+// --- CONFIG ---
+const cardsURL = "https://YOUR_CARDS_TXT_URL/cards.txt";
+const HOLE_VALUES = [5, 10, 11, 20, 49, 700];
+let allowedCards = [];
+let scannedCards = [];
+let gameActive = false;
+let ballsLeft = 3;
+let tickets = 0;
+
+// --- LOAD CARDS ---
+fetch(cardsURL)
+    .then(r => r.text())
+    .then(t => {
+        allowedCards = t.split("\n").map(l => l.trim()).filter(l=>l.length>0);
+        console.log("Loaded cards:", allowedCards);
+    })
+    .catch(e => console.error("Failed to load cards", e));
+
+// --- NFC SCAN ---
+async function scanNFC() {
+    if (!("NDEFReader" in window)) {
+        setStatus("NFC not supported", "err");
+        return;
+    }
+
+    try {
+        const reader = new NDEFReader();
+        await reader.scan();
+        setStatus("Hold card near phone…");
+
+        reader.onreading = event => {
+            const serial = event.serialNumber.toUpperCase();
+            console.log("Scanned:", serial);
+
+            const matchLine = allowedCards.find(line => {
+                const fileSerial = line.split("|")[0].toUpperCase();
+                return fileSerial === serial;
+            });
+
+            if (!matchLine) {
+                setStatus("❌ Card not recognized", "err");
+                return;
+            }
+
+            const parts = matchLine.split("|");
+            const mol = Number(parts[1]);
+
+            if (mol <= 2) {
+                setStatus("❌ Not enough MOL coins", "err");
+                return;
+            }
+
+            if (!scannedCards.includes(serial)) {
+                scannedCards.push(serial);
+            }
+
+            setStatus(`✅ Card accepted (${scannedCards.length}/2)`, "ok");
+
+            if (scannedCards.length >=2) startGame();
+        };
+
+    } catch (e) {
+        setStatus("❌ Permission denied or scan failed", "err");
+    }
+}
+
+// --- STATUS HELPER ---
+function setStatus(text, cls) {
+    const el = document.getElementById("status");
+    el.innerHTML = text;
+    el.className = cls || "";
+}
+
+// --- START GAME ---
+function startGame() {
+    if (gameActive) return;
+    gameActive = true;
+
+    document.getElementById("gameArea").style.display = "block";
+    document.getElementById("info").style.display = "block";
+    setStatus("🎮 Game started!", "ok");
+
+    spawnHoles();
+    spawnBalls();
+}
+
+// --- HOLES ---
+function spawnHoles() {
+    setInterval(() => {
+        if (!gameActive) return;
+
+        const hole = document.createElement("div");
+        hole.className = "hole";
+        const value = HOLE_VALUES[Math.floor(Math.random()*HOLE_VALUES.length)];
+        hole.innerText = value;
+        hole.dataset.value = value;
+        hole.style.left = "100%";
+
+        document.getElementById("gameArea").appendChild(hole);
+
+        let x = window.innerWidth;
+        const move = setInterval(() => {
+            x -= 2;
+            hole.style.left = x + "px";
+
+            if (x < -80) {
+                hole.remove();
+                clearInterval(move);
+            }
+        }, 16);
+    }, 1200);
+}
+
+// --- BALLS ---
+function spawnBalls() {
+    for (let i=0;i<3;i++){
+        const ball = document.createElement("div");
+        ball.className = "ball";
+        ball.style.left = 50+i*40+"px";
+        document.getElementById("gameArea").appendChild(ball);
+
+        ball.onclick = () => shootBall(ball);
+    }
+}
+
+function shootBall(ball){
+    if (ballsLeft<=0) return;
+    ballsLeft--;
+    document.getElementById("balls").innerText = ballsLeft;
+
+    let y = 0;
+    const shot = setInterval(()=>{
+        y+=5;
+        ball.style.bottom = y+"px";
+
+        document.querySelectorAll(".hole").forEach(hole=>{
+            const b = ball.getBoundingClientRect();
+            const h = hole.getBoundingClientRect();
+            if (b.left<h.right && b.right>h.left && b.top<h.bottom && b.bottom>h.top){
+                tickets+=Number(hole.dataset.value);
+                document.getElementById("tickets").innerText = tickets;
+                hole.remove();
+                ball.remove();
+                clearInterval(shot);
+            }
+        });
+
+        if(y>350){
+            ball.remove();
+            clearInterval(shot);
+        }
+    },16);
+}
+</script>
+</body>
+</html>    cursor: pointer;
     margin-top: 15px;
 }
 
