@@ -87,8 +87,8 @@ button {
 <h1>NFC HOLE GAME</h1>
 
 <div id="box">
-    <p>Scan 2 NFC cards with >2 MOL coins</p>
-    <button onclick="scanNFC()">Scan NFC</button>
+    <p>Scan 1 NFC card with >2 MOL coins</p>
+    <button id="scanBtn" onclick="scanNFC()">Scan NFC</button>
     <div id="status">Waiting…</div>
 </div>
 
@@ -101,10 +101,9 @@ button {
 
 <script>
 // --- CONFIG ---
-const cardsURL = "https://YOUR_CARDS_TXT_URL/cards.txt";
+const cardsURL = "/storage/emulated/0/cards.txt";
 const HOLE_VALUES = [5, 10, 11, 20, 49, 700];
 let allowedCards = [];
-let scannedCards = [];
 let gameActive = false;
 let ballsLeft = 3;
 let tickets = 0;
@@ -120,10 +119,15 @@ fetch(cardsURL)
 
 // --- NFC SCAN ---
 async function scanNFC() {
+    if (gameActive) return; // disable scanning during game
+
     if (!("NDEFReader" in window)) {
         setStatus("NFC not supported", "err");
         return;
     }
+
+    const scanBtn = document.getElementById("scanBtn");
+    scanBtn.disabled = true; // prevent double clicks
 
     try {
         const reader = new NDEFReader();
@@ -141,6 +145,7 @@ async function scanNFC() {
 
             if (!matchLine) {
                 setStatus("❌ Card not recognized", "err");
+                scanBtn.disabled = false;
                 return;
             }
 
@@ -149,20 +154,17 @@ async function scanNFC() {
 
             if (mol <= 2) {
                 setStatus("❌ Not enough MOL coins", "err");
+                scanBtn.disabled = false;
                 return;
             }
 
-            if (!scannedCards.includes(serial)) {
-                scannedCards.push(serial);
-            }
-
-            setStatus(`✅ Card accepted (${scannedCards.length}/2)`, "ok");
-
-            if (scannedCards.length >=2) startGame();
+            setStatus(`✅ Card accepted! MOL: ${mol}`, "ok");
+            startGame();
         };
 
     } catch (e) {
         setStatus("❌ Permission denied or scan failed", "err");
+        scanBtn.disabled = false;
     }
 }
 
@@ -188,8 +190,8 @@ function startGame() {
 
 // --- HOLES ---
 function spawnHoles() {
-    setInterval(() => {
-        if (!gameActive) return;
+    const interval = setInterval(() => {
+        if (!gameActive) { clearInterval(interval); return; }
 
         const hole = document.createElement("div");
         hole.className = "hole";
@@ -204,11 +206,7 @@ function spawnHoles() {
         const move = setInterval(() => {
             x -= 2;
             hole.style.left = x + "px";
-
-            if (x < -80) {
-                hole.remove();
-                clearInterval(move);
-            }
+            if (x < -80) { hole.remove(); clearInterval(move); }
         }, 16);
     }, 1200);
 }
@@ -251,128 +249,13 @@ function shootBall(ball){
             ball.remove();
             clearInterval(shot);
         }
+
+        // --- AUTO REFRESH after last ball ---
+        if (ballsLeft === 0 && document.querySelectorAll(".ball").length === 0){
+            setTimeout(()=>location.reload(), 1500);
+        }
     },16);
 }
 </script>
-</body>
-</html>    cursor: pointer;
-    margin-top: 15px;
-}
-
-#status {
-    margin-top: 20px;
-    font-size: 18px;
-}
-
-.ok { color: #0f0; }
-.err { color: #f33; }
-
-#game {
-    display: none;
-    margin-top: 25px;
-    font-size: 22px;
-    color: #0f0;
-}
-</style>
-</head>
-
-<body>
-
-<h1>NFC ACCESS SYSTEM</h1>
-
-<div id="box">
-    <p>Tap NFC card to continue</p>
-    <button onclick="scanNFC()">Scan NFC</button>
-    <div id="status">Waiting…</div>
-</div>
-
-<div id="game">
-    🎮 GAME UNLOCKED<br>
-    Enjoy!
-</div>
-
-<script>
-let cards = [];
-
-// Replace this with your HTTPS URL
-const cardsURL = "https://noampro900.github.io/data5555555555/cards.txt";
-
-// Load cards.txt from HTTPS
-fetch(cardsURL)
-    .then(r => {
-        if (!r.ok) throw new Error("Failed to fetch cards.txt");
-        return r.text();
-    })
-    .then(t => {
-        cards = t
-            .split("\n")
-            .map(l => l.trim())
-            .filter(l => l.length > 0);
-        console.log("Loaded cards:", cards);
-    })
-    .catch(err => {
-        console.error(err);
-        document.getElementById("status").innerText =
-            "❌ Failed to load cards file";
-    });
-
-async function scanNFC() {
-    if (!("NDEFReader" in window)) {
-        setStatus("NFC not supported", "err");
-        return;
-    }
-
-    try {
-        const reader = new NDEFReader();
-        await reader.scan();
-        setStatus("Hold card near phone…");
-
-        reader.onreading = (event) => {
-            const scannedSerial = event.serialNumber.toUpperCase();
-            console.log("Scanned:", scannedSerial);
-
-            // 🔥 Correct match logic
-            const matchLine = cards.find(line => {
-                const fileSerial = line.split("|")[0].toUpperCase();
-                return fileSerial === scannedSerial;
-            });
-
-            if (!matchLine) {
-                setStatus("❌ Card not recognized", "err");
-                return;
-            }
-
-            const parts = matchLine.split("|");
-            const mol = Number(parts[1]);
-            const tickets = Number(parts[2]);
-
-            if (mol <= 2) {
-                setStatus("❌ Not enough MOL coins", "err");
-                return;
-            }
-
-            setStatus(
-                `✅ Card accepted<br>MOL: ${mol} | Tickets: ${tickets}`,
-                "ok"
-            );
-            unlockGame();
-        };
-
-    } catch (e) {
-        setStatus("❌ Permission denied or scan failed", "err");
-    }
-}
-
-function unlockGame() {
-    document.getElementById("game").style.display = "block";
-}
-
-function setStatus(text, cls) {
-    const el = document.getElementById("status");
-    el.innerHTML = text;
-    el.className = cls || "";
-}
-</script>
-
 </body>
 </html>
